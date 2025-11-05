@@ -1,10 +1,12 @@
-import Header from "./components/Header"; 
-import "./styles/styleguide.css";          
+import Header from "./components/Header/Header";
+import Onboarding from "./components/Onboarding/Onboarding";
+import "./styles/styleguide.css";
 
 function App() {
   return (
     <>
-      <Header /> 
+      <Header />
+      <Onboarding />
     </>
   );
 }

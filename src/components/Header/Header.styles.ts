@@ -8,7 +8,7 @@ const H = {
     align-items: center;
     height: 90px;
     width: 100%;
-    background-color: #bac7ff33;
+    background-color: var(--primary-04);
     border-bottom: 1px solid transparent;
     border-image: linear-gradient(
         275deg,
@@ -19,7 +19,12 @@ const H = {
         rgba(76, 229, 167, 1) 100%
       )
       1;
-    padding: 10px 80px;
+    padding: 10px 80px 10px 10px; /* slight left shift */
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
   `,
 
   // 내부 flex 영역

@@ -1,5 +1,5 @@
 import H from "./Header.styles.ts";
-import BK from "../assets/BK.png";
+import BK from "../../assets/BK.png";
 
 export default function Header() {
   return (
