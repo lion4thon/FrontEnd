@@ -1,14 +1,21 @@
-import Header from "./components/Header/Header";
-import Onboarding from "./components/Onboarding/Onboarding";
-import "./styles/styleguide.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
+import { theme } from "./styles/theme";
+import { GlobalStyle } from "./styles/GlobalStyle";
 
-function App() {
+import Onboarding from "./components/Onboarding/Onboarding";
+import PackagePage from "./pages/Package/PackagePage";
+
+export default function App() {
   return (
-    <>
-      <Header />
-      <Onboarding />
-    </>
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Onboarding />} />
+          <Route path="/package" element={<PackagePage />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
-
-export default App;
