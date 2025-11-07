@@ -10,7 +10,7 @@ export const SearchInput = styled.div`
   display: flex;
   flex: 0 0 auto;
   gap: 10px;
-  padding: 16px 24px;
+  padding: 16px 16px;
   position: relative;
   width: 100%;
 
@@ -28,8 +28,8 @@ export const Icon = styled.div`
   flex-shrink: 0;
 
   img {
-    width: 20px;
-    height: 20px;
+    width: 46px;
+    height: 46px;
     object-fit: contain;
   }
 `;

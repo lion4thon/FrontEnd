@@ -1,6 +1,6 @@
 import React from "react";
 import * as S from "./DivWrapper.styles";
-import searchIcon from "../../../assets/Vector.png";
+import searchIcon from "../../../assets/gg_search.png";
 
 interface DivWrapperProps {
   className?: string;

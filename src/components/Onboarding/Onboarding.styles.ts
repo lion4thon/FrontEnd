@@ -3,29 +3,70 @@ import styled from "styled-components";
 export const Container = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: flex-start;
   position: relative;
-  height: 936px;
+  min-height: calc(100vh - 90px);
+  padding: 0;
   background-color: var(--bg-white);
+  width: 100%;
+  padding-top: 260.5px;
+
+  @media (max-width: 1440px) {
+    padding-top: 200px;
+  }
+
+  @media (max-width: 1024px) {
+    padding-top: 120px;
+  }
+
+  @media (max-width: 768px) {
+    padding-top: 80px;
+  }
 `;
 
 export const Inner = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;
-  max-width: 1200px;
-  width: 100%;
+  width: auto;
   z-index: 1;
-  padding-top: 194px;
-  padding-right: 150px;
+  padding: 80px 0 80px 40px;
   align-items: flex-start;
+  position: relative;
+
+  @media (max-width: 1440px) {
+    padding: 60px 0 60px 60px;
+  }
+
+  @media (max-width: 1024px) {
+    padding: 40px 0 40px 40px;
+    gap: 32px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 24px;
+    gap: 24px;
+    width: 100%;
+  }
 `;
 
 export const TextSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 800px;
+  max-width: 600px;
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    max-width: 500px;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    gap: 16px;
+  }
 `;
 
 export const Title = styled.h1`
@@ -93,22 +134,44 @@ export const VectorIcon = styled.img`
 `;
 
 export const RightVisual = styled.div`
-  position: absolute;
+  position: fixed;
   right: 0;
-  top: 0px;
-  height: 846px;
+  top: 90px;
+  height: calc(100vh - 90px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-end;
   pointer-events: none;
+  z-index: 0;
+  width: 50%;
 
   img {
     height: 100%;
     width: auto;
+    max-width: 100%;
+    object-fit: cover;
+    object-position: top right;
     filter: drop-shadow(var(--drop-shadow));
     user-select: none;
   }
 
+  @media (max-width: 1440px) {
+    width: 45%;
+  }
+
+  @media (max-width: 1280px) {
+    width: 40%;
+  }
+
   @media (max-width: 1024px) {
+    width: 35%;
+
+    img {
+      object-fit: contain;
+    }
+  }
+
+  @media (max-width: 768px) {
     display: none;
   }
 `;
