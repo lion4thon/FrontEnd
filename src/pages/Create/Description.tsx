@@ -20,4 +20,3 @@ export const Description: React.FC = () => {
     </S.Frame>
   );
 };
-
