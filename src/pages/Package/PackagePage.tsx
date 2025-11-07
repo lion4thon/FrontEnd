@@ -6,6 +6,7 @@ import HorizontalSection from "../../components/HorizontalSection";
 import * as S from "./Package.style";
 
 import fitness1 from "../../assets/sample_pic2.svg";
+// import Header from "../../components/Header/Header";
 
 import type {
   PriceRange,
@@ -163,51 +164,54 @@ export default function PackagePage() {
   );
 
   return (
-    <S.Page>
-      <S.HeaderPlaceholder />
+    <>
+      {/* <Header /> */}
+      <S.Page>
+        <S.HeaderPlaceholder />
 
-      <S.Content>
-        <S.Greeting>
-          <h1>
-            반가워요, 산초님!
-            <br />
-            오늘도 MOV와 함께 다양한 운동을 체험해볼까요?
-          </h1>
-        </S.Greeting>
+        <S.Content>
+          <S.Greeting>
+            <h1>
+              반가워요, 산초님!
+              <br />
+              오늘도 MOV와 함께 다양한 운동을 체험해볼까요?
+            </h1>
+          </S.Greeting>
 
-        {/* 검색 */}
-        <SearchBar onSearch={setQuery} />
-        <S.Spacer />
+          {/* 검색 */}
+          <SearchBar onSearch={setQuery} />
+          <S.Spacer />
 
-        {/* 필터바 */}
-        <FilterBar
-          price={price}
-          sort={sort}
-          time={time}
-          onChangePrice={setPrice}
-          onChangeSort={setSort}
-          onChangeTime={setTime}
-          selectedTags={selectedTags}
-          onToggleTag={toggleTag}
+          {/* 필터바 */}
+          <FilterBar
+            price={price}
+            sort={sort}
+            time={time}
+            onChangePrice={setPrice}
+            onChangeSort={setSort}
+            onChangeTime={setTime}
+            selectedTags={selectedTags}
+            onToggleTag={toggleTag}
+          />
+          <S.Spacer />
+        </S.Content>
+
+        <HorizontalSection
+          title="💪 헬린이를 위한 가벼운 헬스 패키지"
+          items={sectionGym}
+          keyPrefix="gym-"
         />
-        <S.Spacer />
-      </S.Content>
-
-      <HorizontalSection
-        title="💪 헬린이를 위한 가벼운 헬스 패키지"
-        items={sectionGym}
-        keyPrefix="gym-"
-      />
-      <HorizontalSection
-        title="🧘‍♀️ 요가 · 필라테스 추천 패키지"
-        items={sectionYoga}
-        keyPrefix="yoga-"
-      />
-      <HorizontalSection
-        title="🏃‍♀️ 활동적인 러닝/클라이밍 패키지"
-        items={sectionActive}
-        keyPrefix="active-"
-      />
-    </S.Page>
+        <HorizontalSection
+          title="🧘‍♀️ 요가 · 필라테스 추천 패키지"
+          items={sectionYoga}
+          keyPrefix="yoga-"
+        />
+        <HorizontalSection
+          title="🏃‍♀️ 활동적인 러닝/클라이밍 패키지"
+          items={sectionActive}
+          keyPrefix="active-"
+        />
+      </S.Page>
+    </>
   );
 }

@@ -25,6 +25,15 @@ const H = {
     left: 0;
     right: 0;
     z-index: 100;
+
+    box-sizing: border-box; /* FIX: 패딩 포함한 폭 계산 안정화 */
+
+    /* FIX: 상위/전역에서 writing-mode가 흘러올 때 강제 가로 레이아웃 */
+    &,
+    & * {
+      writing-mode: horizontal-tb;
+      text-orientation: mixed;
+    }
   `,
 
   // 내부 flex 영역
@@ -40,6 +49,7 @@ const H = {
   // 로고 이미지
   Logo: styled.img`
     flex: 1;
+    margin-left: 50px;
   `,
 
   // 중앙 네비게이션 메뉴
@@ -49,6 +59,8 @@ const H = {
     justify-content: center;
     align-items: center;
     gap: 80px;
+
+    white-space: nowrap; /* FIX: 한글이 문자 단위 줄바꿈 되는 현상 방지 */
   `,
 
   NavItem: styled.a`
@@ -59,6 +71,8 @@ const H = {
     color: var(--black);
     cursor: pointer;
     transition: all 0.2s ease;
+
+    white-space: nowrap; /* FIX: 메뉴 텍스트 강제 단어 줄바꿈 방지 */
 
     &:hover {
       color: var(--primary-03);
@@ -72,6 +86,9 @@ const H = {
     justify-content: flex-end;
     align-items: center;
     gap: 32px;
+
+    white-space: nowrap; /* FIX: 버튼/텍스트 세로 깨짐 방지 */
+    flex-wrap: nowrap; /* FIX: 좁을 때도 줄바꿈 금지 */
   `,
 
   SignUp: styled.span`
@@ -81,6 +98,9 @@ const H = {
     color: var(--gray-600);
     -webkit-text-stroke: 0.25px #ffffff;
     cursor: pointer;
+
+    white-space: nowrap; /* FIX */
+    line-height: 1; /* FIX: 수직 정렬 흔들림 방지 */
   `,
 
   LoginButton: styled.button`
@@ -95,6 +115,9 @@ const H = {
     cursor: pointer;
     height: 42.75px;
     transition: all 0.2s ease;
+
+    white-space: nowrap; /* FIX: '로그인' 세로로 갈라짐 방지 */
+    line-height: 1; /* FIX: 버튼 내부 수직 가운데 안정화 */
 
     &:hover {
       background-color: var(--primary-02);
