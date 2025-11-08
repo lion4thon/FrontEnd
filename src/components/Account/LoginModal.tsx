@@ -2,57 +2,47 @@ import { useState } from "react";
 import styled from "styled-components";
 import LogoModal from "../../assets/MOV_modal.svg";
 
-/** 모달 레지스트리에서 주입되는 프롭스 타입 */
-interface LoginModalProps {
-  __close: () => void;
+type Props = {
+  onClose: () => void;
   onSuccess?: () => void;
-}
+};
 
-/** 이메일 유효성 (로컬 검증용) */
-const isValidEmail = (v: string) => /\S+@\S+\.\S+/.test(v);
-
-export const LoginModal: React.FC<LoginModalProps> = ({
-  __close,
-  onSuccess,
-}) => {
-  const [email, setEmail] = useState<string>("");
-  const [pw, setPw] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-
-  /** 필드별 에러 메시지 */
+export default function LoginModalBody({ onClose, onSuccess }: Props) {
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [emailErr, setEmailErr] = useState<string | null>(null);
   const [pwErr, setPwErr] = useState<string | null>(null);
 
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const isValidEmail = (v: string) => /\S+@\S+\.\S+/.test(v);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     setEmailErr(null);
     setPwErr(null);
-
-    const trimmedEmail = email.trim();
-    const trimmedPw = pw.trim();
-
-    let hasError = false;
-    if (!trimmedEmail) {
+    const te = email.trim(),
+      tp = pw.trim();
+    let bad = false;
+    if (!te) {
       setEmailErr("이메일을 입력해주세요.");
-      hasError = true;
-    } else if (!isValidEmail(trimmedEmail)) {
+      bad = true;
+    } else if (!isValidEmail(te)) {
       setEmailErr("이메일 형식이 올바르지 않습니다.");
-      hasError = true;
+      bad = true;
     }
-    if (!trimmedPw) {
+    if (!tp) {
       setPwErr("비밀번호를 입력해주세요.");
-      hasError = true;
+      bad = true;
     }
-    if (hasError) return;
+    if (bad) return;
 
     setLoading(true);
     try {
-      // 로그인 API 연결 해야됨*****
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 600)); // API 대기 시뮬
       onSuccess?.();
-      __close();
+      onClose();
     } catch {
       setErr("이메일 또는 비밀번호가 올바르지 않습니다.");
     } finally {
@@ -64,7 +54,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     <Wrap>
       <TopBar>
         <span aria-hidden="true" />
-        <CloseBtn aria-label="닫기" onClick={__close} disabled={loading}>
+        <CloseBtn onClick={onClose} aria-label="닫기" disabled={loading}>
           ✕
         </CloseBtn>
       </TopBar>
@@ -73,7 +63,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <LogoImg src={LogoModal} alt="MOV 로고" />
       </LogoArea>
 
-      <form onSubmit={submit} aria-labelledby="LoginModal-title" noValidate>
+      <form onSubmit={submit} noValidate>
         {err && <ErrorBanner role="alert">{err}</ErrorBanner>}
 
         <Field>
@@ -84,9 +74,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             value={email}
             onChange={(e) => setEmail(e.currentTarget.value)}
             placeholder="이메일을 입력하세요"
-            autoFocus
             autoComplete="email"
-            inputMode="email"
             aria-invalid={!!emailErr}
             aria-describedby={emailErr ? "login-email-err" : undefined}
             disabled={loading}
@@ -124,16 +112,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </Primary>
         </Actions>
 
-        {/* <HelperRow>
-          <a href="#">비밀번호 찾기</a>
-          <a href="#">회원가입하기</a>
-        </HelperRow> */}
-
         <HelperRowTop>
           <span />
           <a href="#">비밀번호 찾기 ❯</a>
         </HelperRowTop>
-
         <HelperRowBottom>
           <span>아직 MOV의 회원이 아니신가요?</span>
           <a href="#">회원가입하기</a>
@@ -141,14 +123,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       </form>
     </Wrap>
   );
-};
+}
 
 // 스타일
 const Wrap = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-
   form {
     display: flex;
     flex-direction: column;
@@ -168,10 +149,9 @@ const CloseBtn = styled.button`
   background: transparent;
   font-size: 18px;
   cursor: pointer;
-
   &:disabled {
-    cursor: default;
     opacity: 0.6;
+    cursor: default;
   }
 `;
 
@@ -200,7 +180,6 @@ const Field = styled.div`
   flex-direction: column;
   gap: 6px;
   margin-bottom: 16px;
-
   label {
     font-size: 18px;
     color: #374151;
@@ -223,11 +202,9 @@ const Input = styled.input`
   outline: none;
   font-size: 15px;
   background: #eef1f9;
-
   &:focus {
     border-color: #5b7cff;
   }
-
   &::placeholder {
     color: #9aa3af;
   }
@@ -259,25 +236,12 @@ const Primary = styled.button`
   }
 `;
 
-// const HelperRow = styled.div`
-//   display: flex;
-//   justify-content: space-between;
-//   margin-top: 8px;
-
-//   a {
-//     font-size: 14px;
-//     color: #5b7cff;
-//     text-decoration: none;
-//   }
-// `;
-
 const HelperRowTop = styled.div`
   width: 360px;
   margin: 8px auto 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   a {
     font-size: 14px;
     color: #2c2f36;
@@ -285,10 +249,6 @@ const HelperRowTop = styled.div`
     display: inline-flex;
     align-items: center;
     gap: 4px;
-  }
-
-  a::after {
-    content: "";
   }
 `;
 
@@ -302,12 +262,6 @@ const HelperRowBottom = styled.div`
   color: #2c2f36;
   font-size: 14px;
   font-weight: 500;
-
-  span {
-    font-size: 14px;
-    font-weight: 500;
-  }
-
   a {
     font-size: 14px;
     font-weight: 500;
