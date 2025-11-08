@@ -5,6 +5,7 @@ import { GlobalStyle } from "./styles/GlobalStyle";
 
 import Onboarding from "./components/Onboarding/Onboarding";
 import PackagePage from "./pages/Package/PackagePage";
+import Create from "./pages/Create/Create";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/package" element={<PackagePage />} />
+          <Route path="/create" element={<Create />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

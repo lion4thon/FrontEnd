@@ -4,10 +4,9 @@ const H = {
   // 전체 헤더 영역
   Container: styled.header`
     display: flex;
-    justify-content: center;
     align-items: center;
     height: 90px;
-    width: 100%;
+    width: 100vw;
     background-color: var(--primary-04);
     border-bottom: 1px solid transparent;
     border-image: linear-gradient(
@@ -19,27 +18,30 @@ const H = {
         rgba(76, 229, 167, 1) 100%
       )
       1;
-    padding: 10px 80px 10px 10px; /* slight left shift */
-    position: sticky;
+    padding: 0;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
+    box-sizing: border-box;
   `,
 
   // 내부 flex 영역
   Inner: styled.div`
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 32px;
+    justify-content: space-between;
+    gap: 0;
     width: 100%;
-    max-width: 1440px;
+    padding: 0 120px;
+    box-sizing: border-box;
   `,
 
   // 로고 이미지
   Logo: styled.img`
-    flex: 1;
+    flex-shrink: 0;
+    height: auto;
   `,
 
   // 중앙 네비게이션 메뉴
@@ -68,7 +70,7 @@ const H = {
   // 우측 로그인/회원가입 영역
   UserMenu: styled.div`
     display: flex;
-    flex: 1;
+    flex-shrink: 0;
     justify-content: flex-end;
     align-items: center;
     gap: 32px;
