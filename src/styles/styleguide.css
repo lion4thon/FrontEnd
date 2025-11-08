@@ -1,3 +1,9 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
   --bg-white: rgba(247, 248, 255, 1);
   --black: rgba(26, 26, 26, 1);

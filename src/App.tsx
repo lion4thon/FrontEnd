@@ -7,6 +7,7 @@ import AppLayout from "./layouts/AppLayout";
 import Onboarding from "./components/Onboarding/Onboarding";
 import PackagePage from "./pages/Package/PackagePage";
 import SurveyPage from "./pages/Package/Survey/SurveyPage";
+import Create from "./pages/Create/Create";
 
 export default function App() {
   return (
@@ -19,7 +20,7 @@ export default function App() {
             <Route path="/package" element={<PackagePage />} />
             <Route path="/package/survey" element={<SurveyPage />} />
             <Route path="/package/survey/:page" element={<SurveyPage />} />
-          </Route>
+            <Route path="/create" element={<Create />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
