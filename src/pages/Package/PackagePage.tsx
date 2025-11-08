@@ -6,6 +6,8 @@ import HorizontalSection from "../../components/HorizontalSection";
 import * as S from "./Package.style";
 
 import fitness1 from "../../assets/sample_pic2.svg";
+import Footer from "../../components/Footer/Footer";
+
 // import Header from "../../components/Header/Header";
 
 import type {
@@ -212,6 +214,7 @@ export default function PackagePage() {
           keyPrefix="active-"
         />
       </S.Page>
+      <Footer />
     </>
   );
 }
