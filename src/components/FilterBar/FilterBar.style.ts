@@ -99,7 +99,7 @@ export const Menu = styled.div`
 
 export const Option = styled.button<{ $active?: boolean }>`
   display: block;
-  width: 100%;
+  width: 90px;
   text-align: center;
   padding: 10px 20px;
   border: 0;

@@ -7,7 +7,6 @@ export const Page = styled.main`
   width: 100%;
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.bgWhite};
-  padding: 120px 0 100px; /* 상단 header + 하단 여백 */
   & > * {
     width: 100%;
     max-width: 1200px;
