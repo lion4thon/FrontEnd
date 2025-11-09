@@ -389,6 +389,7 @@ export const TabHeader = styled.div`
   align-items: center;
   gap: 24px;
   padding: 16px 24px;
+  border-bottom: 0.5px solid #c1c5d0;
 `;
 
 export const TabButton = styled.button<{ active: boolean }>`
@@ -409,8 +410,8 @@ export const TabIndicator = styled.div<{ position: "left" | "right" }>`
   position: absolute;
   width: 48px;
   height: 4px;
-  top: 70.5px;
-  left: ${({ position }) => (position === "left" ? "23.5px" : "79.5px")};
+  top: 55px;
+  left: ${({ position }) => (position === "left" ? "23.5px" : "87px")};
   background: #2c2e35;
   transition: left 0.3s ease;
   z-index: 1;

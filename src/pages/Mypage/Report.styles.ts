@@ -50,7 +50,6 @@ export const Section = styled.div<{ $first?: boolean; $last?: boolean }>`
   background: #f3f7ff;
   border: ${({ $first, $last }) => {
     if ($first) return "none";
-    if ($last) return "1px solid #c1c5d0";
     return "0.5px solid #7d808d";
   }};
   border-radius: 20px;

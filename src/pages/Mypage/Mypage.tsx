@@ -1,6 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header";
+import MyReview from "./MyReview";
 import * as S from "./Mypage.styles";
 import type {
   UserProfile,
@@ -8,6 +9,7 @@ import type {
   CompletedPackage,
   PackageStorage,
   Report,
+  Review,
 } from "./Mypage.types";
 
 // Mock data - replace with real data later
@@ -109,11 +111,115 @@ const mockReports: Report[] = [
   },
 ];
 
+const mockReviews: Review[] = [
+  {
+    id: 1,
+    userId: 1,
+    userName: "산초",
+    userAvatar:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/oy7UPzHHgG.png",
+    date: "2025.11.13",
+    content:
+      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
+    helpfulCount: 11,
+  },
+  {
+    id: 2,
+    userId: 1,
+    userName: "산초",
+    userAvatar:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/t5FyAuO7gi.png",
+    date: "2025.11.13",
+    content:
+      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
+    helpfulCount: 11,
+  },
+  {
+    id: 3,
+    userId: 1,
+    userName: "산초",
+    userAvatar:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/WC4PG9v5vW.png",
+    date: "2025.11.13",
+    content:
+      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
+    helpfulCount: 11,
+  },
+  {
+    id: 4,
+    userId: 1,
+    userName: "산초",
+    userAvatar:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/y0UFXbG7fG.png",
+    date: "2025.11.13",
+    content:
+      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
+    helpfulCount: 11,
+  },
+  {
+    id: 5,
+    userId: 1,
+    userName: "산초",
+    userAvatar:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/0EUtBXOqgL.png",
+    date: "2025.11.13",
+    content:
+      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
+    helpfulCount: 11,
+  },
+];
+
+const REPORTS_STORAGE_KEY = "user_reports";
+
 export default function Mypage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = React.useState<"report" | "review">(
     "report"
   );
+  const [reports, setReports] = React.useState<Report[]>(mockReports);
+
+  // 로컬 스토리지에서 리포트 목록을 읽어오는 함수
+  const loadReports = React.useCallback(() => {
+    const savedReportsJson = localStorage.getItem(REPORTS_STORAGE_KEY);
+    if (savedReportsJson) {
+      try {
+        const savedReports: Report[] = JSON.parse(savedReportsJson);
+        // 저장된 리포트와 mock 리포트 병합 (저장된 리포트가 우선)
+        // 중복 제거 (같은 ID가 있으면 저장된 것 사용)
+        const reportMap = new Map<number, Report>();
+
+        // 먼저 mock 리포트 추가
+        mockReports.forEach((report) => {
+          reportMap.set(report.id, report);
+        });
+
+        // 저장된 리포트 추가 (같은 ID가 있으면 덮어쓰기)
+        savedReports.forEach((report) => {
+          reportMap.set(report.id, report);
+        });
+
+        // Map을 배열로 변환하고 최신순으로 정렬
+        const mergedReports = Array.from(reportMap.values()).sort(
+          (a, b) => b.id - a.id
+        );
+
+        setReports(mergedReports);
+      } catch (error) {
+        console.error("리포트 목록을 불러오는 중 오류 발생:", error);
+        // 오류 발생 시 mock 데이터 사용
+        setReports(mockReports);
+      }
+    } else {
+      // 저장된 리포트가 없으면 mock 데이터만 사용
+      setReports(mockReports);
+    }
+  }, []);
+
+  // 컴포넌트 마운트 시 및 location 변경 시 로컬 스토리지에서 리포트 목록 읽기
+  React.useEffect(() => {
+    loadReports();
+  }, [loadReports, location.pathname]);
 
   // Refs for scrollable containers
   const ongoingPackagesRef = React.useRef<HTMLDivElement | null>(null);
@@ -315,23 +421,27 @@ export default function Mypage() {
               <S.TabIndicator
                 position={activeTab === "report" ? "left" : "right"}
               />
-              <S.ReportList>
-                {mockReports.map((report) => (
-                  <S.ReportCard key={report.id}>
-                    <S.ReportThumbnail
-                      src={report.thumbnail}
-                      alt={report.title}
-                    />
-                    <S.ReportInfo>
-                      <S.ReportDate>{report.date}</S.ReportDate>
-                      <S.ReportTitleRow>
-                        <S.ReportTitle>{report.title}</S.ReportTitle>
-                        <S.ReportChevron />
-                      </S.ReportTitleRow>
-                    </S.ReportInfo>
-                  </S.ReportCard>
-                ))}
-              </S.ReportList>
+              {activeTab === "report" ? (
+                <S.ReportList>
+                  {reports.map((report) => (
+                    <S.ReportCard key={report.id}>
+                      <S.ReportThumbnail
+                        src={report.thumbnail}
+                        alt={report.title}
+                      />
+                      <S.ReportInfo>
+                        <S.ReportDate>{report.date}</S.ReportDate>
+                        <S.ReportTitleRow>
+                          <S.ReportTitle>{report.title}</S.ReportTitle>
+                          <S.ReportChevron />
+                        </S.ReportTitleRow>
+                      </S.ReportInfo>
+                    </S.ReportCard>
+                  ))}
+                </S.ReportList>
+              ) : (
+                <MyReview reviews={mockReviews} />
+              )}
             </S.RightColumn>
           </S.MainLayout>
         </S.Content>

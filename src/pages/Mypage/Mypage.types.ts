@@ -61,6 +61,24 @@ export interface Report {
   title: string;
 }
 
+// 6. 리뷰
+export interface Review {
+  /** 리뷰 ID */
+  id: number;
+  /** 사용자 ID */
+  userId: number;
+  /** 사용자 이름 (예: "산초") */
+  userName: string;
+  /** 사용자 프로필 사진 URL */
+  userAvatar: string;
+  /** 리뷰 작성 날짜 (예: "2025.11.13") */
+  date: string;
+  /** 리뷰 내용 */
+  content: string;
+  /** 도움이 됐어요 개수 */
+  helpfulCount: number;
+}
+
 // API 응답 타입 (선택사항 - API 구조에 맞게 수정)
 export interface MypageData {
   profile: UserProfile;
@@ -68,5 +86,6 @@ export interface MypageData {
   completedPackages: CompletedPackage[];
   packageStorage: PackageStorage[];
   reports: Report[];
+  reviews: Review[];
 }
 

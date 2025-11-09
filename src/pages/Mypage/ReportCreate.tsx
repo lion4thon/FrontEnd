@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "./ReportCreate.styles";
-import type { CompletedPackage } from "./Mypage.types";
+import type { CompletedPackage, Report } from "./Mypage.types";
 
 export type ReportData = {
   package: CompletedPackage;
@@ -66,12 +67,15 @@ const getMoodText = (moods: string[]): string => {
   return moods.map((mood) => map[mood] || mood).join(", ");
 };
 
+const REPORTS_STORAGE_KEY = "user_reports";
+
 export default function ReportCreate({
   open,
   onClose,
   reportData,
   onSave,
 }: ReportCreateProps) {
+  const navigate = useNavigate();
   const [reportTitle, setReportTitle] = React.useState("");
 
   // 바디 스크롤 잠금 + ESC 닫기
@@ -102,18 +106,46 @@ export default function ReportCreate({
   const isSaveEnabled = reportTitle.trim().length > 0;
 
   const handleSave = () => {
-    if (!isSaveEnabled) return;
+    if (!isSaveEnabled || !reportData) return;
 
-    // TODO: API 호출로 리포트 저장
-    const reportDataWithTitle = {
-      ...reportData,
-      reportTitle: reportTitle.trim(),
+    // 리포트 생성 날짜 포맷팅 (예: "10월 31일")
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const formattedDate = `${month}월 ${day}일`;
+
+    // 리포트 데이터 생성
+    const newReport: Report = {
+      id: Date.now(), // 고유 ID (타임스탬프 사용)
+      thumbnail: reportData.package.thumbnail, // 패키지 썸네일
+      date: formattedDate, // 생성 날짜
+      title: reportTitle.trim(), // 작성한 리포트 제목
     };
-    console.log("리포트 저장:", reportDataWithTitle);
+
+    // 로컬 스토리지에서 기존 리포트 목록 가져오기
+    const existingReportsJson = localStorage.getItem(REPORTS_STORAGE_KEY);
+    const existingReports: Report[] = existingReportsJson
+      ? JSON.parse(existingReportsJson)
+      : [];
+
+    // 새 리포트를 목록 맨 앞에 추가
+    const updatedReports = [newReport, ...existingReports];
+
+    // 로컬 스토리지에 저장
+    localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(updatedReports));
+
+    console.log("리포트 저장 완료:", newReport);
+
+    // 콜백 실행
     if (onSave) {
       onSave();
     }
+
+    // 모달 닫기
     onClose();
+
+    // 마이페이지로 이동
+    navigate("/mypage");
   };
 
   const handleBackdrop = (e: React.MouseEvent) => {
