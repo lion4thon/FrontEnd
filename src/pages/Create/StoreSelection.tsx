@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "./StoreSelection.styles";
 import { DivWrapper } from "./StoreSelection/DivWrapper";
 import "../../styles/styleguide.css";
@@ -37,6 +38,7 @@ const STORES: Store[] = [
 ];
 
 export const StoreSelection: React.FC = () => {
+  const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<boolean[]>([
     false,
     false,
@@ -110,6 +112,11 @@ export const StoreSelection: React.FC = () => {
     const newOpenStoreDropdowns = [...openStoreDropdowns];
     newOpenStoreDropdowns[index] = false;
     setOpenStoreDropdowns(newOpenStoreDropdowns);
+
+    // 매장 상세 정보 페이지로 이동
+    navigate(`/create/store/${store.id}`, {
+      state: { store, sport: selectedSports[index] },
+    });
   };
 
   // 외부 클릭 시 드롭다운 닫기
