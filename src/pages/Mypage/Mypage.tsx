@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import * as S from "./Mypage.styles";
 import type {
@@ -109,6 +110,7 @@ const mockReports: Report[] = [
 ];
 
 export default function Mypage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = React.useState<"report" | "review">(
     "report"
   );
@@ -237,7 +239,15 @@ export default function Mypage() {
                       </S.CompletedPackageContent>
                       <S.ActionButtons>
                         <S.ActionButtonSmall>리뷰 작성</S.ActionButtonSmall>
-                        <S.ActionButtonSmall>리포트 작성</S.ActionButtonSmall>
+                        <S.ActionButtonSmall
+                          onClick={() =>
+                            navigate("/mypage/report", {
+                              state: { package: pkg },
+                            })
+                          }
+                        >
+                          리포트 작성
+                        </S.ActionButtonSmall>
                       </S.ActionButtons>
                     </S.CompletedPackageCard>
                   ))}

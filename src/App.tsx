@@ -10,6 +10,7 @@ import SurveyPage from "./pages/Package/Survey/SurveyPage";
 import Create from "./pages/Create/Create";
 import StoreInformation from "./pages/Create/StoreInformation";
 import Mypage from "./pages/Mypage/Mypage";
+import Report from "./pages/Mypage/Report";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
               element={<StoreInformation />}
             />
             <Route path="/mypage" element={<Mypage />} />
+            <Route path="/mypage/report" element={<Report />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -88,41 +88,23 @@ export const ImageNavigation = styled.div`
   gap: 8px;
 `;
 
-export const NavButton = styled.button<{ disabled?: boolean }>`
-  width: 30px;
-  height: 30px;
-  background: transparent;
-  border: none;
+export const NavButton = styled.button<{ direction: "left" | "right"; disabled?: boolean }>`
+  width: 24px;
+  height: 24px;
+  background: url("https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/e8nmmpVe7a.png")
+    no-repeat center;
+  background-size: cover;
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
   padding: 0;
-  transition: opacity 0.2s ease;
-
-  &:hover:not(:disabled) {
-    opacity: 0.8;
-  }
-`;
-
-export const NavButtonLeftIcon = styled.div`
-  width: 30px;
-  height: 30px;
-  background: url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/gBe5aOQAEE.png)
-    no-repeat center;
-  background-size: cover;
-  opacity: 0.8;
-`;
-
-export const NavButtonRightIcon = styled.div`
-  width: 30px;
-  height: 30px;
-  background: url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/gBe5aOQAEE.png)
-    no-repeat center;
-  background-size: cover;
-  transform: scaleX(-1);
-  opacity: 0.8;
+  flex-shrink: 0;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+  
+  ${({ direction }) =>
+    direction === "left" &&
+    `
+    transform: rotate(180deg);
+  `}
 `;
 
 export const ImageGrid = styled.div`

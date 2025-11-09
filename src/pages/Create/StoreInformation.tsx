@@ -336,13 +336,13 @@ export const StoreInformation: React.FC = () => {
               {canScrollImages && (
                 <S.ImageNavigation>
                   <S.NavButton
+                    direction="left"
                     onClick={() => scrollImages("left")}
                     disabled={imageScrollPosition === 0}
                     aria-label="이전 이미지"
-                  >
-                    <S.NavButtonLeftIcon />
-                  </S.NavButton>
+                  />
                   <S.NavButton
+                    direction="right"
                     onClick={() => scrollImages("right")}
                     disabled={(() => {
                       if (!imageGridRef.current) return false;
@@ -354,9 +354,7 @@ export const StoreInformation: React.FC = () => {
                       return imageScrollPosition >= maxScroll - 1; // 1px 오차 허용
                     })()}
                     aria-label="다음 이미지"
-                  >
-                    <S.NavButtonRightIcon />
-                  </S.NavButton>
+                  />
                 </S.ImageNavigation>
               )}
               <S.ImageGrid ref={imageGridRef}>
