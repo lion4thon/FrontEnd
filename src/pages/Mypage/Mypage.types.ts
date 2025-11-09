@@ -79,6 +79,16 @@ export interface Review {
   helpfulCount: number;
 }
 
+// 7. 매장
+export interface Store {
+  /** 매장 ID */
+  id: number;
+  /** 매장 사진 URL */
+  image: string;
+  /** 매장 이름 (예: "버클 필라테스 & PT 미아점") */
+  name: string;
+}
+
 // API 응답 타입 (선택사항 - API 구조에 맞게 수정)
 export interface MypageData {
   profile: UserProfile;

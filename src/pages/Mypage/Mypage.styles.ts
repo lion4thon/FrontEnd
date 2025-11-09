@@ -21,7 +21,7 @@ export const Content = styled.div`
 
 export const MainLayout = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 16px;
 `;
 
@@ -35,13 +35,13 @@ export const LeftColumn = styled.div`
 export const RightColumn = styled.div`
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
+  flex: 1;
   background: #f7f8ff;
   border: 0.5px solid #c1c5d0;
   border-radius: 20px;
   box-shadow: 4px 4px 20px 0 rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  height: 822px;
+  min-height: 0;
   position: relative;
 `;
 
@@ -210,6 +210,7 @@ export const PackageCard = styled.div`
   width: 480px;
   padding: 12px;
   background: #f7f8ff;
+  border: 1px solid #6180ff;
   border-radius: 28px;
   box-shadow: 4px 4px 20px 0 rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
@@ -241,7 +242,7 @@ export const StoragePackageCard = styled.div`
   width: 480px;
   padding: 12px 16px 12px 12px;
   background: #f7f8ff;
-  border: 1px solid #c1c5d0;
+  border: 1px solid #6180ff;
   border-radius: 28px;
   box-shadow: 4px 4px 20px 0 rgba(0, 0, 0, 0.15);
   flex-shrink: 0;

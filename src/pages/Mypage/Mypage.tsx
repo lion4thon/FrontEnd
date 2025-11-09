@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import MyReview from "./MyReview";
+import MyReviewCreate, { type ReviewCreateData } from "./MyReviewCreate";
 import * as S from "./Mypage.styles";
 import type {
   UserProfile,
@@ -10,6 +11,7 @@ import type {
   PackageStorage,
   Report,
   Review,
+  Store,
 } from "./Mypage.types";
 
 // Mock data - replace with real data later
@@ -80,92 +82,34 @@ const mockPackageStorage: PackageStorage[] = [
   },
 ];
 
-const mockReports: Report[] = [
-  {
-    id: 1,
-    date: "10월 31일",
-    title: "필라테스 세션 리포트",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/LokM5c85Mh.png",
-  },
-  {
-    id: 2,
-    date: "10월 31일",
-    title: "필라테스 세션 리포트",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/YkLSyzBXrT.png",
-  },
-  {
-    id: 3,
-    date: "10월 31일",
-    title: "필라테스 세션 리포트",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/FFjRmcNLez.png",
-  },
-  {
-    id: 4,
-    date: "10월 31일",
-    title: "필라테스 세션 리포트",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/Y8PCuADijL.png",
-  },
-];
+// Mock reports data - 초기에는 빈 배열 (사용자가 작성한 리포트만 표시)
+// TODO: API 연결 시 실제 리포트 데이터를 가져오도록 수정
+const mockReports: Report[] = [];
 
-const mockReviews: Review[] = [
+// Mock reviews data - 초기에는 빈 배열 (사용자가 작성한 리뷰만 표시)
+// TODO: API 연결 시 실제 리뷰 데이터를 가져오도록 수정
+const mockReviews: Review[] = [];
+
+// Mock stores data - 패키지별 매장 정보
+// TODO: API 연결 시 실제 패키지별 매장 정보를 가져오도록 수정
+const mockStores: Store[] = [
   {
     id: 1,
-    userId: 1,
-    userName: "산초",
-    userAvatar:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/oy7UPzHHgG.png",
-    date: "2025.11.13",
-    content:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
+    name: "버클 필라테스 & PT 미아점",
+    image:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/store1.png",
   },
   {
     id: 2,
-    userId: 1,
-    userName: "산초",
-    userAvatar:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/t5FyAuO7gi.png",
-    date: "2025.11.13",
-    content:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
+    name: "요가 스튜디오 강남점",
+    image:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/store2.png",
   },
   {
     id: 3,
-    userId: 1,
-    userName: "산초",
-    userAvatar:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/WC4PG9v5vW.png",
-    date: "2025.11.13",
-    content:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
-  },
-  {
-    id: 4,
-    userId: 1,
-    userName: "산초",
-    userAvatar:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/y0UFXbG7fG.png",
-    date: "2025.11.13",
-    content:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
-  },
-  {
-    id: 5,
-    userId: 1,
-    userName: "산초",
-    userAvatar:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/0EUtBXOqgL.png",
-    date: "2025.11.13",
-    content:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
+    name: "필라테스 센터 홍대점",
+    image:
+      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/store3.png",
   },
 ];
 
@@ -178,6 +122,10 @@ export default function Mypage() {
     "report"
   );
   const [reports, setReports] = React.useState<Report[]>(mockReports);
+  const [reviews, setReviews] = React.useState<Review[]>(mockReviews);
+  const [isReviewModalOpen, setIsReviewModalOpen] = React.useState(false);
+  const [selectedReviewData, setSelectedReviewData] =
+    React.useState<ReviewCreateData | null>(null);
 
   // 로컬 스토리지에서 리포트 목록을 읽어오는 함수
   const loadReports = React.useCallback(() => {
@@ -241,6 +189,44 @@ export default function Mypage() {
         behavior: "smooth",
       });
     }
+  };
+
+  // 현재 날짜를 "YYYY.MM.DD" 형식으로 반환
+  const getCurrentDate = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  };
+
+  // 리뷰 추가 핸들러
+  const handleReviewSave = (reviewContent: string) => {
+    if (!reviewContent.trim()) return;
+
+    // 리뷰 목록에 추가 (최신 리뷰가 맨 위에 오도록)
+    setReviews((prevReviews) => {
+      // 새로운 리뷰 ID 생성 (기존 리뷰의 최대 ID + 1, 없으면 1)
+      const newId = prevReviews.length > 0 
+        ? Math.max(...prevReviews.map((r) => r.id)) + 1 
+        : 1;
+
+      // 새로운 리뷰 객체 생성
+      const newReview: Review = {
+        id: newId,
+        userId: 1, // mockUser의 ID (실제로는 사용자 ID 사용)
+        userName: mockUser.name,
+        userAvatar: mockUser.avatar,
+        date: getCurrentDate(),
+        content: reviewContent.trim(),
+        helpfulCount: 0,
+      };
+
+      return [newReview, ...prevReviews];
+    });
+    
+    // 리뷰 탭으로 전환
+    setActiveTab("review");
   };
 
   return (
@@ -344,7 +330,17 @@ export default function Mypage() {
                         </S.PackageInfo>
                       </S.CompletedPackageContent>
                       <S.ActionButtons>
-                        <S.ActionButtonSmall>리뷰 작성</S.ActionButtonSmall>
+                        <S.ActionButtonSmall
+                          onClick={() => {
+                            setSelectedReviewData({
+                              package: pkg,
+                              stores: mockStores,
+                            });
+                            setIsReviewModalOpen(true);
+                          }}
+                        >
+                          리뷰 작성
+                        </S.ActionButtonSmall>
                         <S.ActionButtonSmall
                           onClick={() =>
                             navigate("/mypage/report", {
@@ -440,12 +436,21 @@ export default function Mypage() {
                   ))}
                 </S.ReportList>
               ) : (
-                <MyReview reviews={mockReviews} />
+                <MyReview reviews={reviews} />
               )}
             </S.RightColumn>
           </S.MainLayout>
         </S.Content>
       </S.Container>
+      <MyReviewCreate
+        open={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setSelectedReviewData(null);
+        }}
+        reviewData={selectedReviewData}
+        onSave={handleReviewSave}
+      />
     </>
   );
 }
