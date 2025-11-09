@@ -9,6 +9,7 @@ import PackagePage from "./pages/Package/PackagePage";
 import SurveyPage from "./pages/Package/Survey/SurveyPage";
 import Create from "./pages/Create/Create";
 import StoreInformation from "./pages/Create/StoreInformation";
+import Mypage from "./pages/Mypage/Mypage";
 
 export default function App() {
   return (
@@ -22,7 +23,11 @@ export default function App() {
             <Route path="/package/survey" element={<SurveyPage />} />
             <Route path="/package/survey/:page" element={<SurveyPage />} />
             <Route path="/create" element={<Create />} />
-            <Route path="/create/store/:storeId" element={<StoreInformation />} />
+            <Route
+              path="/create/store/:storeId"
+              element={<StoreInformation />}
+            />
+            <Route path="/mypage" element={<Mypage />} />
           </Route>
         </Routes>
       </BrowserRouter>
