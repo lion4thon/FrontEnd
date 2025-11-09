@@ -164,8 +164,23 @@ export const StoreInformation: React.FC = () => {
     // 패키지 담기 로직
     console.log("패키지 담기", { storeId, storeInfo, sport: locationState?.sport });
     // TODO: 패키지에 매장 추가 API 호출
-    // 추가 후 Create 페이지로 돌아가기
-    navigate("/create");
+    // 추가 후 Create 페이지로 돌아가면서 선택된 매장 정보 전달
+    navigate("/create", {
+      state: {
+        addedStore: {
+          id: storeId,
+          name: storeInfo.name,
+          address: storeInfo.address,
+          image: storeInfo.images[0],
+          description: {
+            group: "그룹 (3인)", // TODO: API에서 받아올 예정
+            time: "1타임 (60분)", // TODO: API에서 받아올 예정
+          },
+          price: "40,000원", // TODO: API에서 받아올 예정
+        },
+        sport: locationState?.sport || "필라테스",
+      },
+    });
   };
 
   // 주소 설명을 줄바꿈 처리
