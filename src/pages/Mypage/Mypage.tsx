@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import MyReview from "./MyReview";
 import MyReviewCreate, { type ReviewCreateData } from "./MyReviewCreate";
+import MyReviewDelete from "./MyReviewDelete";
 import * as S from "./Mypage.styles";
 import type {
   UserProfile,
@@ -126,6 +127,10 @@ export default function Mypage() {
   const [isReviewModalOpen, setIsReviewModalOpen] = React.useState(false);
   const [selectedReviewData, setSelectedReviewData] =
     React.useState<ReviewCreateData | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [reviewIdToDelete, setReviewIdToDelete] = React.useState<number | null>(
+    null
+  );
 
   // 로컬 스토리지에서 리포트 목록을 읽어오는 함수
   const loadReports = React.useCallback(() => {
@@ -227,6 +232,27 @@ export default function Mypage() {
     
     // 리뷰 탭으로 전환
     setActiveTab("review");
+  };
+
+  // 리뷰 삭제 핸들러
+  const handleReviewDelete = (reviewId: number) => {
+    setReviewIdToDelete(reviewId);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 리뷰 삭제 확인 핸들러
+  const handleDeleteConfirm = () => {
+    if (reviewIdToDelete === null) return;
+
+    // TODO: API 호출로 리뷰 삭제
+    console.log("리뷰 삭제 완료:", reviewIdToDelete);
+
+    // 리뷰 목록에서 삭제
+    setReviews((prevReviews) =>
+      prevReviews.filter((review) => review.id !== reviewIdToDelete)
+    );
+
+    setReviewIdToDelete(null);
   };
 
   return (
@@ -436,7 +462,7 @@ export default function Mypage() {
                   ))}
                 </S.ReportList>
               ) : (
-                <MyReview reviews={reviews} />
+                <MyReview reviews={reviews} onDelete={handleReviewDelete} />
               )}
             </S.RightColumn>
           </S.MainLayout>
@@ -450,6 +476,14 @@ export default function Mypage() {
         }}
         reviewData={selectedReviewData}
         onSave={handleReviewSave}
+      />
+      <MyReviewDelete
+        open={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setReviewIdToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
       />
     </>
   );
