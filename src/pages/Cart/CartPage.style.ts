@@ -10,7 +10,7 @@ export const Container = styled.div`
   height: 100dvh; /* 화면 스크롤 잠금용: 컨테이너를 뷰포트 높이에 고정 */
   overflow: visible; /* 바깥 스크롤 금지 */
 
-  padding: calc(var(--header-h) + 24px) 20px 24px;
+  padding: 24px 20px 24px;
   box-sizing: border-box;
   background: #f5f7fd;
   text-align: left;
