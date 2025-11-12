@@ -48,15 +48,13 @@ const H = {
 
   // 로고 이미지
   Logo: styled.img`
-    flex: 1;
-    margin-left: 50px;
+    padding-top: 8px;
   `,
 
   // 중앙 네비게이션 메뉴
   NavMenu: styled.nav`
     display: flex;
     flex: 1;
-    justify-content: center;
     align-items: center;
     gap: 80px;
 

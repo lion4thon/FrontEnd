@@ -1,10 +1,11 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 
 type DialogProps = {
   open: boolean;
   onClose: () => void;
-  title?: string;
+  title?: React.ReactNode;
   children?: React.ReactNode;
   actions?: React.ReactNode;
   backdropClosable?: boolean;
@@ -29,7 +30,6 @@ export default function Dialog({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
@@ -43,7 +43,7 @@ export default function Dialog({
     if (e.target === e.currentTarget) onClose();
   };
 
-  return (
+  return createPortal(
     <Backdrop onMouseDown={handleBackdrop}>
       <Panel role="dialog" aria-modal="true" aria-labelledby={labelledById}>
         {title || actions ? (
@@ -56,7 +56,8 @@ export default function Dialog({
           children
         )}
       </Panel>
-    </Backdrop>
+    </Backdrop>,
+    document.body
   );
 }
 
@@ -67,25 +68,33 @@ const Backdrop = styled.div`
   background: rgba(19, 22, 31, 0.48);
   display: grid;
   place-items: center;
-  z-index: 1000;
+  z-index: 9998; /* ✅ 아주 높게 */
 `;
 
 const Panel = styled.div`
+  position: fixed; /* ✅ 안전하게 고정 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(500px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
   padding: 28px 24px 24px;
-  animation: fadeIn 160ms ease-out;
+  z-index: 9999; /* ✅ Backdrop 위 */
 
+  animation: fadeIn 160ms ease-out;
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translate(-50%, calc(-50% + 8px));
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate(-50%, -50%);
     }
   }
 `;
@@ -119,7 +128,7 @@ const Actions = styled.div`
   gap: 12px;
 `;
 
-// 공용버튼
+// 공용버튼 동일
 export const Btn = styled.button<{
   variant?: "primary" | "secondary" | "ghost";
 }>`

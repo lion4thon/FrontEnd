@@ -1,19 +1,22 @@
 import { useMemo, useState, type ComponentProps } from "react";
+import { useNavigate } from "react-router-dom";
+
 import SearchBar from "../../components/SearchBar/SearchBar";
 import FilterBar from "../../components/FilterBar/FilterBar";
 import PackageCard from "../../components/PackageCard/PackageCard";
 import HorizontalSection from "../../components/HorizontalSection";
 import * as S from "./Package.style";
-
-import fitness1 from "../../assets/sample_pic2.svg";
 import Footer from "../../components/Footer/Footer";
 
-// import Header from "../../components/Header/Header";
+import fitness1 from "../../assets/sample_pic2.svg";
+
+import { useAuth } from "../../providers/AuthProvider";
+import LoginRequiredModal from "../../components/Modal/LoginRequiredModal";
+import SurveyRequiredModal from "../../components/Modal/SurveyRequiredModal";
 
 import type {
   PriceRange,
   Sort,
-  TimeSlot,
 } from "../../components/FilterBar/FilterBar.types";
 
 type PackageItem = ComponentProps<typeof PackageCard>["item"];
@@ -95,11 +98,41 @@ const mockPackages: PackageItem[] = [
 ];
 
 export default function PackagePage() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [price, setPrice] = useState<PriceRange>("전체");
   const [sort, setSort] = useState<Sort>("전체");
-  const [time, setTime] = useState<TimeSlot>("전체");
+
+  const { isLoggedIn, surveyCompleted } = useAuth();
+  const nav = useNavigate();
+
+  const [openLogin, setOpenLogin] = useState<boolean>(false);
+  const [openSurvey, setOpenSurvey] = useState<boolean>(false);
+
+  // 정렬 변경 시 정책 분기 (AI 추천순 클릭 → 로그인/설문 체크)
+  const handleSortChange = (v: Sort) => {
+    if (v === "AI 추천순") {
+      if (!isLoggedIn) {
+        setOpenLogin(true);
+        return;
+      }
+      if (!surveyCompleted) {
+        setOpenSurvey(true);
+        return;
+      }
+    }
+    setSort(v);
+  };
+
+  const handleLogin = () => {
+    setOpenLogin(false);
+    nav("/login"); // 로그인 모달로 이동
+  };
+  const handleGoSurvey = () => {
+    setOpenSurvey(false);
+    nav("/survey/start"); // 설문 시작 모달로 이동
+  };
+
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -109,18 +142,13 @@ export default function PackagePage() {
   const filtered = useMemo(() => {
     let list = [...mockPackages];
 
-    // 검색
     const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter((p) => p.title.toLowerCase().includes(q));
-    }
+    if (q) list = list.filter((p) => p.title.toLowerCase().includes(q));
 
-    // 태그 AND 필터
     if (selectedTags.length > 0) {
       list = list.filter((p) => selectedTags.every((t) => p.tags.includes(t)));
     }
 
-    // 정렬 (필드가 확실한 것만 사용: 가격 정렬 + 기본/업로드순은 id로 대체)
     switch (sort) {
       case "가격낮은순":
         list.sort((a, b) => a.pricePerClass - b.pricePerClass);
@@ -129,20 +157,16 @@ export default function PackagePage() {
         list.sort((a, b) => b.pricePerClass - a.pricePerClass);
         break;
       case "업로드순":
-        // createdAt이 없다면 id 역순을 간이 최신으로 사용
         list.sort((a, b) => b.id - a.id);
         break;
       case "조회순":
       case "AI 추천순":
       default:
-        // 뷰/추천 점수가 생기면 여기서 정렬
         break;
     }
-
     return list;
   }, [query, selectedTags, sort]);
 
-  // 섹션 분류
   const sectionGym = useMemo(
     () =>
       filtered.filter((p) =>
@@ -167,7 +191,6 @@ export default function PackagePage() {
 
   return (
     <>
-      {/* <Header /> */}
       <S.Page>
         <S.HeaderPlaceholder />
 
@@ -180,18 +203,14 @@ export default function PackagePage() {
             </h1>
           </S.Greeting>
 
-          {/* 검색 */}
           <SearchBar onSearch={setQuery} />
           <S.Spacer />
 
-          {/* 필터바 */}
           <FilterBar
             price={price}
             sort={sort}
-            time={time}
             onChangePrice={setPrice}
-            onChangeSort={setSort}
-            onChangeTime={setTime}
+            onChangeSort={handleSortChange}
             selectedTags={selectedTags}
             onToggleTag={toggleTag}
           />
@@ -214,7 +233,20 @@ export default function PackagePage() {
           keyPrefix="active-"
         />
       </S.Page>
+
       <Footer />
+
+      {/* 모달들 */}
+      <LoginRequiredModal
+        open={openLogin}
+        onClose={() => setOpenLogin(false)}
+        onLogin={handleLogin}
+      />
+      <SurveyRequiredModal
+        open={openSurvey}
+        onClose={() => setOpenSurvey(false)}
+        onGoSurvey={handleGoSurvey}
+      />
     </>
   );
 }

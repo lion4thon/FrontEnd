@@ -5,6 +5,7 @@ export const PRICE_OPTIONS = [
   "10~30만원",
   "30만원 이상",
 ] as const;
+
 export type PriceRange = (typeof PRICE_OPTIONS)[number] | "전체";
 
 export const SORT_OPTIONS = [
@@ -14,24 +15,14 @@ export const SORT_OPTIONS = [
   "가격낮은순",
   "가격높은순",
 ] as const;
-export type Sort = (typeof SORT_OPTIONS)[number] | "전체";
 
-export const TIME_OPTIONS = [
-  "새벽반",
-  "오전반",
-  "오후반",
-  "저녁반",
-  "심야반",
-] as const;
-export type TimeSlot = (typeof TIME_OPTIONS)[number] | "전체";
+export type Sort = (typeof SORT_OPTIONS)[number] | "전체";
 
 export interface FilterBarProps {
   price: PriceRange;
   sort: Sort;
-  time: TimeSlot;
   selectedTags?: string[];
   onChangePrice: (p: PriceRange) => void;
   onChangeSort: (s: Sort) => void;
-  onChangeTime: (t: TimeSlot) => void;
   onToggleTag?: (tag: string) => void;
 }
