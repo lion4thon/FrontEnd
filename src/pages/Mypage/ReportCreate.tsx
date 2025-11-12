@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { MouseEvent } from "react";
 import * as S from "./ReportCreate.styles";
-import type { CompletedPackage, Report } from "./Mypage.types";
+import type { CompletedPackage } from "./Mypage.types";
 
 export type ReportData = {
   package: CompletedPackage;
@@ -67,8 +68,6 @@ const getMoodText = (moods: string[]): string => {
   return moods.map((mood) => map[mood] || mood).join(", ");
 };
 
-const REPORTS_STORAGE_KEY = "user_reports";
-
 export default function ReportCreate({
   open,
   onClose,
@@ -76,7 +75,7 @@ export default function ReportCreate({
   onSave,
   isSubmitting = false,
 }: ReportCreateProps) {
-  const [reportTitle, setReportTitle] = React.useState("");
+  const [reportTitle, setReportTitle] = useState("");
 
   // 바디 스크롤 잠금 + ESC 닫기
   useEffect(() => {
@@ -116,7 +115,7 @@ export default function ReportCreate({
     }
   };
 
-  const handleBackdrop = (e: React.MouseEvent) => {
+  const handleBackdrop = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
@@ -152,9 +151,7 @@ export default function ReportCreate({
             type="text"
             placeholder={reportData.reportTitle || "리포트 이름을 입력하세요"}
             value={reportTitle}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setReportTitle(e.target.value)
-            }
+            onChange={(e) => setReportTitle(e.target.value)}
           />
         </S.ReportTitleCard>
 

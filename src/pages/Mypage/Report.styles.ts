@@ -48,7 +48,7 @@ export const Section = styled.div<{ $first?: boolean; $last?: boolean }>`
   width: 100%;
   padding: 32px 40px;
   background: #f3f7ff;
-  border: ${({ $first, $last }) => {
+  border: ${({ $first }) => {
     if ($first) return "none";
     return "0.5px solid #7d808d";
   }};

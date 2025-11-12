@@ -35,14 +35,21 @@ interface ApiRequestOptions {
  * API 에러 클래스
  */
 export class ApiError extends Error {
+  status: number;
+  code: string;
+  timestamp?: string;
+
   constructor(
-    public status: number,
-    public code: string,
-    public message: string,
-    public timestamp?: string
+    status: number,
+    code: string,
+    message: string,
+    timestamp?: string
   ) {
     super(message);
     this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.timestamp = timestamp;
   }
 }
 
@@ -300,7 +307,9 @@ export const getFacilityReviews = async (
   size: number = 5,
   sort: string = "createdAt,desc"
 ): Promise<ReviewListResponse> => {
-  const endpoint = `/api/facilities/${facilityId}/reviews?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}`;
+  const endpoint = `/api/facilities/${facilityId}/reviews?page=${page}&size=${size}&sort=${encodeURIComponent(
+    sort
+  )}`;
 
   return apiRequest<ReviewListResponse>(endpoint, {
     method: "GET",

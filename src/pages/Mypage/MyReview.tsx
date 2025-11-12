@@ -1,4 +1,3 @@
-import React from "react";
 import * as S from "./MyReview.styles";
 import type { Review } from "./Mypage.types";
 
