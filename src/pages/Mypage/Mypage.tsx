@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import MyReview from "./MyReview";
@@ -14,6 +14,8 @@ import type {
   Review,
   Store,
 } from "./Mypage.types";
+import { getMyPasses } from "../../utils/api";
+import { ApiError } from "../../utils/api";
 
 // Mock data - replace with real data later
 // TODO: API 연결 시 이 부분을 API 호출로 대체
@@ -24,64 +26,17 @@ const mockUser: UserProfile = {
     "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/9XkPfqQ0Gc.png",
 };
 
-const mockOngoingPackages: OngoingPackage[] = [
-  {
-    id: 1,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/qG7GmBtkwP.png",
-  },
-  {
-    id: 2,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/WNf4MBcWOv.png",
-  },
-];
+// 진행 중인 패키지 기본 썸네일
+const ONGOING_THUMBNAIL =
+  "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/qG7GmBtkwP.png";
 
-const mockCompletedPackages: CompletedPackage[] = [
-  {
-    id: 3,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/5kfXuUTTRK.png",
-  },
-  {
-    id: 4,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/2O02RZoPf0.png",
-  },
-];
+// 완료한 패키지 기본 썸네일
+const COMPLETED_THUMBNAIL =
+  "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/5kfXuUTTRK.png";
 
-const mockPackageStorage: PackageStorage[] = [
-  {
-    id: 5,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/8fx5pphgjd.png",
-    price: 43000,
-  },
-  {
-    id: 6,
-    title: "1년차 헬린이를 위한 입문용 패키지",
-    description:
-      "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지.... 선생님들도 친절하고 잘 알려주시는 편이에요.",
-    thumbnail:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/9jRoGQqvfq.png",
-    price: 43000,
-  },
-];
+// 패키지 보관함 기본 썸네일
+const STORAGE_THUMBNAIL =
+  "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/8fx5pphgjd.png";
 
 // Mock reports data - 초기에는 빈 배열 (사용자가 작성한 리포트만 표시)
 // TODO: API 연결 시 실제 리포트 데이터를 가져오도록 수정
@@ -119,21 +74,97 @@ const REPORTS_STORAGE_KEY = "user_reports";
 export default function Mypage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = React.useState<"report" | "review">(
-    "report"
-  );
-  const [reports, setReports] = React.useState<Report[]>(mockReports);
-  const [reviews, setReviews] = React.useState<Review[]>(mockReviews);
-  const [isReviewModalOpen, setIsReviewModalOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = useState<"report" | "review">("report");
+  const [reports, setReports] = useState<Report[]>(mockReports);
+  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedReviewData, setSelectedReviewData] =
-    React.useState<ReviewCreateData | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const [reviewIdToDelete, setReviewIdToDelete] = React.useState<number | null>(
-    null
+    useState<ReviewCreateData | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [reviewIdToDelete, setReviewIdToDelete] = useState<number | null>(null);
+
+  // 패키지 데이터 상태
+  const [ongoingPackages, setOngoingPackages] = useState<OngoingPackage[]>([]);
+  const [completedPackages, setCompletedPackages] = useState<CompletedPackage[]>(
+    []
   );
+  const [packageStorage, setPackageStorage] = useState<PackageStorage[]>([]);
+  const [isLoadingPackages, setIsLoadingPackages] = useState(false);
+  const [packageError, setPackageError] = useState<string | null>(null);
+
+  // 패키지 데이터 가져오기
+  const fetchPackages = useCallback(async () => {
+    try {
+      setIsLoadingPackages(true);
+      setPackageError(null);
+
+      // 세 가지 상태의 패키지를 동시에 가져오기
+      const [ongoingResponse, completedResponse, storageResponse] =
+        await Promise.all([
+          getMyPasses("OWNED"),
+          getMyPasses("COMPLETED"),
+          getMyPasses("IN_LOCKER"),
+        ]);
+
+      // 진행 중인 패키지 매핑
+      if (ongoingResponse.isSuccess && ongoingResponse.data) {
+        const mappedOngoing: OngoingPackage[] = ongoingResponse.data.map(
+          (pass) => ({
+            id: pass.passId,
+            title: pass.passName,
+            description: pass.passDescription,
+            thumbnail: ONGOING_THUMBNAIL, // 기본 썸네일 사용
+          })
+        );
+        setOngoingPackages(mappedOngoing);
+      }
+
+      // 완료한 패키지 매핑
+      if (completedResponse.isSuccess && completedResponse.data) {
+        const mappedCompleted: CompletedPackage[] =
+          completedResponse.data.map((pass) => ({
+            id: pass.passId,
+            title: pass.passName,
+            description: pass.passDescription,
+            thumbnail: COMPLETED_THUMBNAIL, // 기본 썸네일 사용
+          }));
+        setCompletedPackages(mappedCompleted);
+      }
+
+      // 패키지 보관함 매핑
+      if (storageResponse.isSuccess && storageResponse.data) {
+        const mappedStorage: PackageStorage[] = storageResponse.data.map(
+          (pass) => ({
+            id: pass.passId,
+            title: pass.passName,
+            description: pass.passDescription,
+            price: pass.passPrice,
+            thumbnail: STORAGE_THUMBNAIL, // 기본 썸네일 사용
+          })
+        );
+        setPackageStorage(mappedStorage);
+      }
+    } catch (err) {
+      console.error("패키지 조회 실패:", err);
+      if (err instanceof ApiError) {
+        setPackageError(err.message);
+      } else if (err instanceof Error) {
+        setPackageError(err.message);
+      } else {
+        setPackageError("패키지를 가져오는데 실패했습니다.");
+      }
+    } finally {
+      setIsLoadingPackages(false);
+    }
+  }, []);
+
+  // 컴포넌트 마운트 시 패키지 데이터 가져오기
+  useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
 
   // 로컬 스토리지에서 리포트 목록을 읽어오는 함수
-  const loadReports = React.useCallback(() => {
+  const loadReports = useCallback(() => {
     const savedReportsJson = localStorage.getItem(REPORTS_STORAGE_KEY);
     if (savedReportsJson) {
       try {
@@ -170,19 +201,19 @@ export default function Mypage() {
   }, []);
 
   // 컴포넌트 마운트 시 및 location 변경 시 로컬 스토리지에서 리포트 목록 읽기
-  React.useEffect(() => {
+  useEffect(() => {
     loadReports();
   }, [loadReports, location.pathname]);
 
   // Refs for scrollable containers
-  const ongoingPackagesRef = React.useRef<HTMLDivElement | null>(null);
-  const completedPackagesRef = React.useRef<HTMLDivElement | null>(null);
-  const packageStorageRef = React.useRef<HTMLDivElement | null>(null);
+  const ongoingPackagesRef = useRef<HTMLDivElement | null>(null);
+  const completedPackagesRef = useRef<HTMLDivElement | null>(null);
+  const packageStorageRef = useRef<HTMLDivElement | null>(null);
 
   const scrollPackages = (
     ref: React.RefObject<HTMLDivElement | null>,
     direction: "left" | "right"
-  ) => {
+  ): void => {
     if (ref.current) {
       const scrollAmount = 500; // 스크롤할 픽셀 수
       const scrollTo =
@@ -301,7 +332,14 @@ export default function Mypage() {
                   </S.NavigationButtons>
                 </S.SectionHeader>
                 <S.PackageGrid ref={ongoingPackagesRef}>
-                  {mockOngoingPackages.map((pkg) => (
+                  {isLoadingPackages ? (
+                    <div>패키지를 불러오는 중...</div>
+                  ) : packageError ? (
+                    <div>패키지를 불러오는데 실패했습니다: {packageError}</div>
+                  ) : ongoingPackages.length === 0 ? (
+                    <div>진행 중인 패키지가 없습니다.</div>
+                  ) : (
+                    ongoingPackages.map((pkg) => (
                     <S.PackageCard key={pkg.id}>
                       <S.PackageThumbnail src={pkg.thumbnail} alt={pkg.title} />
                       <S.PackageInfo>
@@ -314,7 +352,8 @@ export default function Mypage() {
                         </S.PackageDescription>
                       </S.PackageInfo>
                     </S.PackageCard>
-                  ))}
+                    ))
+                  )}
                 </S.PackageGrid>
               </S.Section>
 
@@ -338,7 +377,14 @@ export default function Mypage() {
                   </S.NavigationButtons>
                 </S.SectionHeader>
                 <S.PackageGrid ref={completedPackagesRef}>
-                  {mockCompletedPackages.map((pkg) => (
+                  {isLoadingPackages ? (
+                    <div>패키지를 불러오는 중...</div>
+                  ) : packageError ? (
+                    <div>패키지를 불러오는데 실패했습니다: {packageError}</div>
+                  ) : completedPackages.length === 0 ? (
+                    <div>완료한 패키지가 없습니다.</div>
+                  ) : (
+                    completedPackages.map((pkg) => (
                     <S.CompletedPackageCard key={pkg.id}>
                       <S.CompletedPackageContent>
                         <S.PackageThumbnail
@@ -378,7 +424,8 @@ export default function Mypage() {
                         </S.ActionButtonSmall>
                       </S.ActionButtons>
                     </S.CompletedPackageCard>
-                  ))}
+                    ))
+                  )}
                 </S.PackageGrid>
               </S.Section>
 
@@ -398,7 +445,14 @@ export default function Mypage() {
                   </S.NavigationButtons>
                 </S.SectionHeader>
                 <S.PackageGrid ref={packageStorageRef}>
-                  {mockPackageStorage.map((pkg) => (
+                  {isLoadingPackages ? (
+                    <div>패키지를 불러오는 중...</div>
+                  ) : packageError ? (
+                    <div>패키지를 불러오는데 실패했습니다: {packageError}</div>
+                  ) : packageStorage.length === 0 ? (
+                    <div>패키지 보관함이 비어있습니다.</div>
+                  ) : (
+                    packageStorage.map((pkg) => (
                     <S.StoragePackageCard key={pkg.id}>
                       <S.PackageThumbnail src={pkg.thumbnail} alt={pkg.title} />
                       <S.StoragePackageInfo>
@@ -419,7 +473,8 @@ export default function Mypage() {
                       </S.StoragePackageInfo>
                       <S.CartIcon />
                     </S.StoragePackageCard>
-                  ))}
+                    ))
+                  )}
                 </S.PackageGrid>
               </S.Section>
             </S.LeftColumn>

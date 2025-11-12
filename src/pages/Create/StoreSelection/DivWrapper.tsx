@@ -1,63 +1,76 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as S from "./DivWrapper.styles";
 import searchIcon from "../../../assets/gg_search.png";
-
-// 매장 데이터 타입
-interface Store {
-  id: string;
-  name: string;
-  address: string;
-  image: string;
-  description: {
-    group: string;
-    time: string;
-  };
-  price: string;
-}
-
-// 임시 매장 데이터 (나중에 API로 대체)
-const SEARCH_STORES: Store[] = [
-  {
-    id: "search-1",
-    name: "버클 필라테스 & PT 미아점",
-    address: "서울 강북구 도봉로 204 3층 버클필라테스",
-    image:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-08/Ojxab1aOX6.png",
-    description: {
-      group: "그룹 (3인)",
-      time: "1타임 (60분)",
-    },
-    price: "40,000원",
-  },
-];
+import { getStoresBySearch } from "../../../utils/api";
+import { convertApiStoreToStore, type Store } from "../../../utils/storeConverter";
 
 interface DivWrapperProps {
   className?: string;
   placeholder?: string;
+  onStoreSelect?: (store: Store) => void;
 }
 
 export const DivWrapper: React.FC<DivWrapperProps> = ({
   className,
   placeholder = "원하는 매장을 직접 검색해서 패키지에 추가하세요",
+  onStoreSelect,
 }) => {
   const [searchValue, setSearchValue] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 검색어에 따라 매장 필터링
+  // 검색어에 따라 API 호출하여 매장 조회
   useEffect(() => {
+    // 이전 타이머 취소
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (searchValue.trim() === "") {
       setFilteredStores([]);
       setShowResults(false);
-    } else {
-      // 검색어와 매장 이름이 일치하는 매장만 필터링
-      const filtered = SEARCH_STORES.filter((store) =>
-        store.name.includes(searchValue.trim())
-      );
-      setFilteredStores(filtered);
-      setShowResults(filtered.length > 0);
+      setError(null);
+      return;
     }
+
+    // 디바운싱: 사용자가 입력을 멈춘 후 300ms 후에 API 호출
+    searchTimeoutRef.current = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await getStoresBySearch(searchValue.trim());
+        if (response.isSuccess && response.data) {
+          const stores = response.data.content.map(convertApiStoreToStore);
+          setFilteredStores(stores);
+          setShowResults(stores.length > 0);
+        } else {
+          throw new Error(response.message || "검색에 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("매장 검색 실패:", error);
+        setFilteredStores([]);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "검색 중 오류가 발생했습니다."
+        );
+        setShowResults(false);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    // cleanup 함수
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [searchValue]);
 
   // 외부 클릭 시 드롭다운 닫기
@@ -80,8 +93,10 @@ export const DivWrapper: React.FC<DivWrapperProps> = ({
   }, [showResults]);
 
   const handleStoreAdd = (store: Store) => {
-    // 매장 추가 로직 (나중에 구현)
-    console.log("매장 추가:", store);
+    // 부모 컴포넌트에 매장 선택 알림
+    if (onStoreSelect) {
+      onStoreSelect(store);
+    }
     setSearchValue("");
     setShowResults(false);
   };
@@ -96,52 +111,79 @@ export const DivWrapper: React.FC<DivWrapperProps> = ({
           type="text"
           placeholder={placeholder}
           value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+            // 검색어가 있으면 결과 표시
+            if (e.target.value.trim() !== "") {
+              setShowResults(true);
+            }
+          }}
           onFocus={() => {
-            if (searchValue.trim() !== "") {
+            // 검색어가 있거나 결과가 있으면 결과 표시
+            if (searchValue.trim() !== "" || filteredStores.length > 0) {
               setShowResults(true);
             }
           }}
         />
       </S.SearchInput>
 
-      {showResults && filteredStores.length > 0 && (
+      {showResults && (
         <S.SearchResultsDropdown>
           <S.SearchResultHeader>
             <S.SearchResultText>검색 결과</S.SearchResultText>
           </S.SearchResultHeader>
-          <S.SearchResultList>
-            {filteredStores.map((store) => (
-              <S.SearchStoreCard key={store.id}>
-                <S.SearchStoreImage src={store.image} alt={store.name} />
-                <S.SearchStoreInfo>
-                  <S.SearchStoreHeader>
-                    <S.SearchStoreNameWrapper>
-                      <S.SearchStoreName>{store.name}</S.SearchStoreName>
-                      <S.SearchStoreVerifiedIcon />
-                    </S.SearchStoreNameWrapper>
-                    <S.SearchStoreAddress>{store.address}</S.SearchStoreAddress>
-                  </S.SearchStoreHeader>
-                  <S.SearchStoreDetails>
-                    <S.SearchStoreDetailRow>
-                      <S.SearchStoreDescription>
-                        {store.description.group}
-                      </S.SearchStoreDescription>
-                      <S.SearchStoreDescription>
-                        {store.description.time}
-                      </S.SearchStoreDescription>
-                      <S.SearchStorePrice>{store.price}</S.SearchStorePrice>
-                      <S.SearchAddToCartButton
-                        onClick={() => handleStoreAdd(store)}
-                      >
-                        확인
-                      </S.SearchAddToCartButton>
-                    </S.SearchStoreDetailRow>
-                  </S.SearchStoreDetails>
-                </S.SearchStoreInfo>
-              </S.SearchStoreCard>
-            ))}
-          </S.SearchResultList>
+          {loading ? (
+            <div style={{ padding: "20px", textAlign: "center" }}>
+              검색 중...
+            </div>
+          ) : error ? (
+            <div
+              style={{
+                padding: "20px",
+                textAlign: "center",
+                color: "#d92d20",
+              }}
+            >
+              {error}
+            </div>
+          ) : filteredStores.length > 0 ? (
+            <S.SearchResultList>
+              {filteredStores.map((store) => (
+                <S.SearchStoreCard key={store.id}>
+                  <S.SearchStoreImage src={store.image} alt={store.name} />
+                  <S.SearchStoreInfo>
+                    <S.SearchStoreHeader>
+                      <S.SearchStoreNameWrapper>
+                        <S.SearchStoreName>{store.name}</S.SearchStoreName>
+                        <S.SearchStoreVerifiedIcon />
+                      </S.SearchStoreNameWrapper>
+                      <S.SearchStoreAddress>{store.address}</S.SearchStoreAddress>
+                    </S.SearchStoreHeader>
+                    <S.SearchStoreDetails>
+                      <S.SearchStoreDetailRow>
+                        <S.SearchStoreDescription>
+                          {store.description.group}
+                        </S.SearchStoreDescription>
+                        <S.SearchStoreDescription>
+                          {store.description.time}
+                        </S.SearchStoreDescription>
+                        <S.SearchStorePrice>{store.price}</S.SearchStorePrice>
+                        <S.SearchAddToCartButton
+                          onClick={() => handleStoreAdd(store)}
+                        >
+                          확인
+                        </S.SearchAddToCartButton>
+                      </S.SearchStoreDetailRow>
+                    </S.SearchStoreDetails>
+                  </S.SearchStoreInfo>
+                </S.SearchStoreCard>
+              ))}
+            </S.SearchResultList>
+          ) : (
+            <div style={{ padding: "20px", textAlign: "center" }}>
+              검색 결과가 없습니다
+            </div>
+          )}
         </S.SearchResultsDropdown>
       )}
     </S.SearchContainer>

@@ -4,40 +4,19 @@ import * as S from "./StoreSelection.styles";
 import { DivWrapper } from "./StoreSelection/DivWrapper";
 import "../../styles/styleguide.css";
 import vector65 from "../../assets/Vector 65.png";
+import { getStoresBySport } from "../../utils/api";
+import { convertApiStoreToStore, type Store } from "../../utils/storeConverter";
 
 // 임시 종목 데이터 (나중에 API로 대체)
 const SPORTS = ["필라테스", "요가", "헬스 트레이닝"];
 
-// 매장 데이터 타입
-interface Store {
-  id: string;
-  name: string;
-  address: string;
-  image: string;
-  description: {
-    group: string;
-    time: string;
-  };
-  price: string;
+interface StoreSelectionProps {
+  onStoresChange?: (stores: (Store | null)[]) => void;
 }
 
-// 임시 매장 데이터 (나중에 API로 대체)
-const STORES: Store[] = [
-  {
-    id: "1",
-    name: "버클 필라테스 & PT 미아점",
-    address: "서울 강북구 도봉로 204 3층 버클필라테스",
-    image:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-08/vdWGL1zHoC.png",
-    description: {
-      group: "그룹 (3인)",
-      time: "1타임 (60분)",
-    },
-    price: "40,000원",
-  },
-];
-
-export const StoreSelection: React.FC = () => {
+export const StoreSelection: React.FC<StoreSelectionProps> = ({
+  onStoresChange,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openDropdowns, setOpenDropdowns] = useState<boolean[]>([
@@ -56,14 +35,29 @@ export const StoreSelection: React.FC = () => {
     null,
     null,
   ]);
+  // 각 종목별 매장 목록 (인덱스는 selectedSports와 동일)
+  const [storesBySport, setStoresBySport] = useState<Store[][]>([[], [], []]);
+  // 각 종목별 로딩 상태
+  const [loadingStores, setLoadingStores] = useState<boolean[]>([
+    false,
+    false,
+    false,
+  ]);
+  // 각 종목별 에러 상태
+  const [storeErrors, setStoreErrors] = useState<(string | null)[]>([
+    null,
+    null,
+    null,
+  ]);
   const dropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
   const storeDropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // StoreInformation에서 돌아올 때 추가된 매장 정보 처리
   useEffect(() => {
-    const locationState = location.state as
-      | { addedStore?: Store; sport?: string }
-      | null;
+    const locationState = location.state as {
+      addedStore?: Store;
+      sport?: string;
+    } | null;
 
     if (locationState?.addedStore && locationState?.sport) {
       // 빈 슬롯 찾기
@@ -84,22 +78,25 @@ export const StoreSelection: React.FC = () => {
 
       setSelectedStores((prev) => {
         const emptyIndex = prev.findIndex((store) => store === null);
+        let newStores: (Store | null)[];
         if (emptyIndex !== -1) {
           // 첫 번째 빈 슬롯에 추가
-          const newStores = [...prev];
+          newStores = [...prev];
           newStores[emptyIndex] = locationState.addedStore!;
-          return newStores;
         } else {
           // 빈 슬롯이 없으면 첫 번째 슬롯에 추가
-          const newStores = [...prev];
+          newStores = [...prev];
           newStores[0] = locationState.addedStore!;
-          return newStores;
         }
+        // 상위 컴포넌트에 변경사항 알리기
+        onStoresChange?.(newStores);
+        return newStores;
       });
 
       // location.state 초기화 (뒤로가기 시 중복 추가 방지)
       window.history.replaceState({}, document.title);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
   // 패키지 가격 계산
@@ -125,7 +122,7 @@ export const StoreSelection: React.FC = () => {
     setOpenDropdowns(newOpenDropdowns);
   };
 
-  const selectSport = (dropdownIndex: number, sport: string) => {
+  const selectSport = async (dropdownIndex: number, sport: string) => {
     const newSelectedSports = [...selectedSports];
     newSelectedSports[dropdownIndex] = sport;
     setSelectedSports(newSelectedSports);
@@ -137,6 +134,56 @@ export const StoreSelection: React.FC = () => {
     const newSelectedStores = [...selectedStores];
     newSelectedStores[dropdownIndex] = null;
     setSelectedStores(newSelectedStores);
+    // 상위 컴포넌트에 변경사항 알리기
+    onStoresChange?.(newSelectedStores);
+
+    // 해당 종목의 매장 목록 초기화 및 에러 상태 초기화
+    const newStoresBySport = [...storesBySport];
+    newStoresBySport[dropdownIndex] = [];
+    setStoresBySport(newStoresBySport);
+
+    const newStoreErrors = [...storeErrors];
+    newStoreErrors[dropdownIndex] = null;
+    setStoreErrors(newStoreErrors);
+
+    // API 호출하여 매장 목록 가져오기
+    const newLoadingStores = [...loadingStores];
+    newLoadingStores[dropdownIndex] = true;
+    setLoadingStores(newLoadingStores);
+
+    try {
+      const response = await getStoresBySport(sport);
+      if (response.isSuccess && response.data) {
+        const stores = response.data.content.map(convertApiStoreToStore);
+        const updatedStoresBySport = [...storesBySport];
+        updatedStoresBySport[dropdownIndex] = stores;
+        setStoresBySport(updatedStoresBySport);
+      } else {
+        throw new Error(
+          response.message || "매장 목록을 가져오는데 실패했습니다."
+        );
+      }
+    } catch (error) {
+      console.error("매장 목록 조회 실패:", error);
+
+      // ApiError인 경우 더 자세한 정보 표시
+      let errorMessage = "매장 목록을 가져오는데 실패했습니다.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // 500 에러인 경우 사용자에게 더 친화적인 메시지 표시
+        if (errorMessage.includes("500")) {
+          errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        }
+      }
+
+      const updatedStoreErrors = [...storeErrors];
+      updatedStoreErrors[dropdownIndex] = errorMessage;
+      setStoreErrors(updatedStoreErrors);
+    } finally {
+      const updatedLoadingStores = [...loadingStores];
+      updatedLoadingStores[dropdownIndex] = false;
+      setLoadingStores(updatedLoadingStores);
+    }
   };
 
   const toggleStoreDropdown = (index: number) => {
@@ -159,12 +206,29 @@ export const StoreSelection: React.FC = () => {
     const newSelectedStores = [...selectedStores];
     newSelectedStores[index] = null;
     setSelectedStores(newSelectedStores);
+    // 상위 컴포넌트에 변경사항 알리기
+    onStoresChange?.(newSelectedStores);
+
+    // 매장 목록 및 관련 상태 초기화
+    const newStoresBySport = [...storesBySport];
+    newStoresBySport[index] = [];
+    setStoresBySport(newStoresBySport);
+
+    const newLoadingStores = [...loadingStores];
+    newLoadingStores[index] = false;
+    setLoadingStores(newLoadingStores);
+
+    const newStoreErrors = [...storeErrors];
+    newStoreErrors[index] = null;
+    setStoreErrors(newStoreErrors);
   };
 
   const addStoreToCart = (index: number, store: Store) => {
     const newSelectedStores = [...selectedStores];
     newSelectedStores[index] = store;
     setSelectedStores(newSelectedStores);
+    // 상위 컴포넌트에 변경사항 알리기
+    onStoresChange?.(newSelectedStores);
     // 매장 추가 후 드롭다운 닫기
     const newOpenStoreDropdowns = [...openStoreDropdowns];
     newOpenStoreDropdowns[index] = false;
@@ -173,6 +237,31 @@ export const StoreSelection: React.FC = () => {
     // 매장 상세 정보 페이지로 이동
     navigate(`/create/store/${store.id}`, {
       state: { store, sport: selectedSports[index] },
+    });
+  };
+
+  // 검색으로 매장 선택 시 처리
+  const handleSearchStoreSelect = (store: Store) => {
+    // 빈 슬롯 찾기
+    const emptyIndex = selectedStores.findIndex((s) => s === null);
+
+    let newSelectedStores: (Store | null)[];
+    if (emptyIndex !== -1) {
+      // 빈 슬롯이 있으면 해당 슬롯에 매장 추가
+      newSelectedStores = [...selectedStores];
+      newSelectedStores[emptyIndex] = store;
+    } else {
+      // 빈 슬롯이 없으면 첫 번째 슬롯에 추가 (기존 매장 대체)
+      newSelectedStores = [...selectedStores];
+      newSelectedStores[0] = store;
+    }
+    setSelectedStores(newSelectedStores);
+    // 상위 컴포넌트에 변경사항 알리기
+    onStoresChange?.(newSelectedStores);
+
+    // 매장 상세 정보 페이지로 이동 (종목 정보는 선택사항)
+    navigate(`/create/store/${store.id}`, {
+      state: { store },
     });
   };
 
@@ -213,6 +302,7 @@ export const StoreSelection: React.FC = () => {
         <DivWrapper
           className="view"
           placeholder="원하는 매장을 직접 검색해서 패키지에 추가하세요"
+          onStoreSelect={handleSearchStoreSelect}
         />
       </S.Div>
 
@@ -261,11 +351,11 @@ export const StoreSelection: React.FC = () => {
                           <S.SelectedStorePrice>
                             {selectedStores[index]!.price.replace("원", "")}
                           </S.SelectedStorePrice>
-                          <S.SelectedStorePriceUnit>원</S.SelectedStorePriceUnit>
+                          <S.SelectedStorePriceUnit>
+                            원
+                          </S.SelectedStorePriceUnit>
                         </S.SelectedStoreDetailRow>
-                        <S.RemoveStoreButton
-                          onClick={() => removeSport(index)}
-                        >
+                        <S.RemoveStoreButton onClick={() => removeSport(index)}>
                           <S.RemoveStoreIcon />
                         </S.RemoveStoreButton>
                       </S.SelectedStoreDetails>
@@ -284,7 +374,9 @@ export const StoreSelection: React.FC = () => {
                         onClick={() => toggleStoreDropdown(index)}
                       >
                         <S.SportTag onClick={(e) => e.stopPropagation()}>
-                          <S.SportTagText>{selectedSports[index]}</S.SportTagText>
+                          <S.SportTagText>
+                            {selectedSports[index]}
+                          </S.SportTagText>
                           <S.CloseButton
                             onClick={(e) => {
                               e.stopPropagation();
@@ -302,8 +394,24 @@ export const StoreSelection: React.FC = () => {
 
                       {openStoreDropdowns[index] && (
                         <S.StoreDropdownList>
-                          {STORES.length > 0 ? (
-                            STORES.map((store) => (
+                          {loadingStores[index] ? (
+                            <div
+                              style={{ padding: "20px", textAlign: "center" }}
+                            >
+                              매장 목록을 불러오는 중...
+                            </div>
+                          ) : storeErrors[index] ? (
+                            <div
+                              style={{
+                                padding: "20px",
+                                textAlign: "center",
+                                color: "#d92d20",
+                              }}
+                            >
+                              {storeErrors[index]}
+                            </div>
+                          ) : storesBySport[index].length > 0 ? (
+                            storesBySport[index].map((store) => (
                               <S.StoreCard
                                 key={store.id}
                                 $isSelected={
@@ -336,13 +444,16 @@ export const StoreSelection: React.FC = () => {
                                         <S.StoreDescription>
                                           {store.description.time}
                                         </S.StoreDescription>
-                                        <S.StorePrice>{store.price}</S.StorePrice>
+                                        <S.StorePrice>
+                                          {store.price}
+                                        </S.StorePrice>
                                         <S.AddToCartButton
                                           onClick={() =>
                                             addStoreToCart(index, store)
                                           }
                                           $isSelected={
-                                            selectedStores[index]?.id === store.id
+                                            selectedStores[index]?.id ===
+                                            store.id
                                           }
                                         >
                                           확인
@@ -354,7 +465,11 @@ export const StoreSelection: React.FC = () => {
                               </S.StoreCard>
                             ))
                           ) : (
-                            <div>매장이 없습니다</div>
+                            <div
+                              style={{ padding: "20px", textAlign: "center" }}
+                            >
+                              매장이 없습니다
+                            </div>
                           )}
                         </S.StoreDropdownList>
                       )}
@@ -408,7 +523,9 @@ export const StoreSelection: React.FC = () => {
       </S.Div>
 
       <S.PriceDiv>
-        <S.TextWrapper4 $hasSelected={selectedStores.some((store) => store !== null)}>
+        <S.TextWrapper4
+          $hasSelected={selectedStores.some((store) => store !== null)}
+        >
           패키지 가격
         </S.TextWrapper4>
         {selectedStores.some((store) => store !== null) ? (

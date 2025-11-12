@@ -13,9 +13,9 @@ const Onboarding: React.FC = () => {
         <S.Inner>
           <S.TextSection>
             <S.Title>
-              내 몸의 감각을 깨우는
+              <span>내 몸의 감각을 깨우는</span>
               <br />
-              가벼운 첫걸음,
+              <span>가벼운 첫걸음,</span>
               <br />
               <S.GradientText>Feel the Move!</S.GradientText>
             </S.Title>

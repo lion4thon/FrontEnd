@@ -5,6 +5,8 @@ import ReportCreate from "./ReportCreate";
 import type { ReportData } from "./ReportCreate";
 import * as S from "./Report.styles";
 import type { CompletedPackage } from "./Mypage.types";
+import { createReport } from "../../utils/api";
+import { ApiError } from "../../utils/api";
 
 const numberIcons: Record<number, string> = {
   1: "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/DwNfOC03zW.png",
@@ -44,6 +46,7 @@ export default function Report() {
   const [moods, setMoods] = useState<Mood[]>([]);
   const [comment, setComment] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // TODO: API 연결 시 사용자 이름으로 교체
   const userName = "산초";
@@ -61,6 +64,54 @@ export default function Report() {
     // 실제로는 패키지 데이터에서 운동 종류를 가져와야 함
     const exerciseType = "필라테스"; // TODO: 패키지 데이터에서 추출
     return `${formatDate(date)} ${exerciseType} 세션 리포트`;
+  };
+
+  // 운동 강도를 한글로 변환
+  const intensityToKorean = (intensity: Intensity): string => {
+    const mapping: Record<Intensity, string> = {
+      low: "낮음",
+      medium: "보통",
+      high: "높음",
+    };
+    return mapping[intensity];
+  };
+
+  // 몸의 컨디션을 한글로 변환
+  const conditionToKorean = (condition: Condition): string => {
+    if (!condition) return "";
+    const mapping: Record<"diet" | "strength", string> = {
+      diet: "다이어트",
+      strength: "체력 증진",
+    };
+    return mapping[condition];
+  };
+
+  // 자극 부위를 한글로 변환
+  const bodyPartToKorean = (bodyPart: BodyPart): string => {
+    const mapping: Record<BodyPart, string> = {
+      shoulder: "어깨",
+      arm: "팔",
+      chest: "가슴",
+      back: "등",
+      abdomen: "복부",
+      waist: "허리",
+      lowerBody: "하체",
+    };
+    return mapping[bodyPart];
+  };
+
+  // 기분/에너지를 한글로 변환
+  const moodToKorean = (mood: Mood): string => {
+    const mapping: Record<Mood, string> = {
+      vitality: "활력",
+      refreshing: "개운함",
+      calm: "차분함",
+      invigorating: "상쾌함",
+      achievement: "성취감",
+      fatigue: "피로함",
+      lethargy: "무기력",
+    };
+    return mapping[mood];
   };
 
   const handleBodyPartToggle = (part: BodyPart) => {
@@ -98,11 +149,57 @@ export default function Report() {
     setIsModalOpen(false);
   };
 
-  const handleSaveReport = () => {
-    // TODO: API 호출로 리포트 저장
-    console.log("리포트 저장 완료");
-    // 저장 후 마이페이지로 이동하거나 모달 닫기
-    setIsModalOpen(false);
+  const handleSaveReport = async () => {
+    if (!packageData || !intensity) {
+      alert("필수 항목을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // 데이터 변환
+      const workoutIntensity = intensityToKorean(intensity);
+      const postWorkoutCondition = conditionToKorean(condition);
+      const muscleActivationAreas = bodyParts.map(bodyPartToKorean);
+      const postWorkoutMood = moods.map(moodToKorean);
+
+      // API 요청 데이터 생성
+      // postWorkoutCondition이 없으면 기본값 "중" 사용 (API Response 예시 참고)
+      const request = {
+        passId: packageData.id,
+        workoutIntensity,
+        postWorkoutCondition: postWorkoutCondition || "중",
+        muscleActivationAreas,
+        postWorkoutMood,
+        oneLineNote: comment.trim(),
+      };
+
+      // API 호출
+      const response = await createReport(request);
+
+      if (response.isSuccess) {
+        console.log("리포트 저장 성공:", response.data);
+        alert("리포트가 성공적으로 저장되었습니다.");
+        // 모달 닫기
+        setIsModalOpen(false);
+        // TODO: 성공 시 처리 (예: 마이페이지로 이동)
+        // navigate("/mypage");
+      } else {
+        throw new Error(response.message || "리포트 저장에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("리포트 저장 실패:", error);
+      if (error instanceof ApiError) {
+        alert(error.message || "리포트 저장에 실패했습니다.");
+      } else if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("리포트 저장에 실패했습니다.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!packageData) {
@@ -142,6 +239,7 @@ export default function Report() {
         onClose={handleCloseModal}
         reportData={reportData}
         onSave={handleSaveReport}
+        isSubmitting={isSubmitting}
       />
       <S.Container>
         <S.Content>

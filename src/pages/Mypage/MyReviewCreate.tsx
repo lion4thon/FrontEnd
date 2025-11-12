@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import * as S from "./MyReviewCreate.styles";
 import type { CompletedPackage, Store } from "./Mypage.types";
+import { createFacilityReview } from "../../utils/api";
+import { ApiError } from "../../utils/api";
 
 export type ReviewCreateData = {
   package: CompletedPackage;
@@ -22,6 +24,8 @@ export default function MyReviewCreate({
 }: MyReviewCreateProps) {
   const [reviewText, setReviewText] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // 바디 스크롤 잠금 + ESC 닫기
   useEffect(() => {
@@ -44,30 +48,52 @@ export default function MyReviewCreate({
     if (open) {
       setReviewText("");
       setSelectedStoreId(null);
+      setError(null);
+      setIsSubmitting(false);
     }
   }, [open]);
 
   if (!open || !reviewData) return null;
 
-  const isSaveEnabled = reviewText.trim().length > 0;
+  const isSaveEnabled =
+    reviewText.trim().length > 0 && selectedStoreId !== null && !isSubmitting;
 
-  const handleSave = () => {
-    if (!isSaveEnabled) return;
+  const handleSave = async () => {
+    if (!isSaveEnabled || selectedStoreId === null) return;
 
-    // TODO: API 호출로 리뷰 저장
-    console.log("리뷰 저장 완료:", {
-      packageId: reviewData.package.id,
-      storeId: selectedStoreId,
-      reviewText: reviewText.trim(),
-    });
+    try {
+      setIsSubmitting(true);
+      setError(null);
 
-    // 콜백 실행 (리뷰 내용 전달)
-    if (onSave) {
-      onSave(reviewText.trim());
+      const response = await createFacilityReview(selectedStoreId, {
+        comment: reviewText.trim(),
+      });
+
+      if (response.isSuccess) {
+        // 성공 시 콜백 실행 (리뷰 내용 전달)
+        if (onSave) {
+          onSave(reviewText.trim());
+        }
+
+        // 모달 닫기
+        onClose();
+      } else {
+        throw new Error(
+          response.message || "리뷰 등록에 실패했습니다."
+        );
+      }
+    } catch (err) {
+      console.error("리뷰 등록 실패:", err);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("리뷰 등록에 실패했습니다.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // 모달 닫기
-    onClose();
   };
 
   const handleBackdrop = (e: React.MouseEvent) => {
@@ -118,11 +144,17 @@ export default function MyReviewCreate({
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
               setReviewText(e.target.value)
             }
+            disabled={isSubmitting}
           />
+          {error && (
+            <div style={{ color: "red", marginTop: "8px", fontSize: "14px" }}>
+              {error}
+            </div>
+          )}
         </S.ReviewInputSection>
 
         <S.SaveButton onClick={handleSave} disabled={!isSaveEnabled}>
-          리뷰 등록
+          {isSubmitting ? "등록 중..." : "리뷰 등록"}
         </S.SaveButton>
       </S.ModalContent>
     </S.Backdrop>

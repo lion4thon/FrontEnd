@@ -1,7 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import * as S from "./StoreInformation.styles";
 import Header from "../../components/Header/Header";
+import { getFacilityDetail, getFacilityReviews } from "../../utils/api";
+import { ApiError } from "../../utils/api";
 
 // 매장 정보 데이터 타입 (API에서 받아올 데이터)
 export interface StoreInfo {
@@ -44,80 +52,250 @@ const mockStoreInfo: StoreInfo = {
   ],
 };
 
-const mockReviews: Review[] = [
-  {
-    id: "1",
-    author: "플랭크요정",
-    authorImage:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/TZt8ki3AkK.png",
-    date: "2025.11.10",
-    comment:
-      "회사 다니면서 틈틈이 운동하려고 등록했는데, 생각보다 훨씬 만족스러워요. 강사님이 자세를 꼼꼼히 봐주고, 잘못된 습관을 바로 잡아줘서 허리 통증이 많이 줄었어요. 수업 분위기도 딱 적당히 활기차서 부담 없고, 끝나고 나면 땀이 확 나서 스트레스도 풀립니다.",
-    helpfulCount: 6,
-    isHelpful: false,
-  },
-  {
-    id: "2",
-    author: "hana93",
-    authorImage:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/Qpu4kDsR5c.png",
-    date: "2025.11.13",
-    comment: "운동 효과가 바로 느껴져요. 어깨 결림 사라졌어요.",
-    helpfulCount: 3,
-    isHelpful: true,
-  },
-  {
-    id: "3",
-    author: "산초",
-    authorImage:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/qn462tN72C.png",
-    date: "2025.11.12",
-    comment:
-      "처음엔 가격이 부담됐는데, 수업 퀄리티 생각하면 납득돼요. 특히 자세 교정이 세밀해서 운동할 맛 납니다.",
-    helpfulCount: 11,
-    isHelpful: false,
-    isOwner: true,
-  },
-  {
-    id: "4",
-    author: "스무디볼",
-    authorImage:
-      "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/ZvyH9iw4EN.png",
-    date: "2025.11.11",
-    comment:
-      "여기 진짜 체계적으로 운영돼요. 회원별 운동기록을 따로 관리해서 어떤 부위를 얼마나 개선 중인지 바로 알려줘요. 수업 강도 조절도 잘 해줘서 초보자도 무리 없이 따라갈 수 있었어요. 다만 인기가 많아서 원하는 시간 예약은 조금 힘든 편이에요.",
-    helpfulCount: 6,
-    isHelpful: false,
-  },
-];
+// mockReviews는 API 연동으로 대체되었습니다.
+// const mockReviews: Review[] = [...];
 
 export const StoreInformation: React.FC = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // location.state에서 전달된 매장 정보 가져오기
-  const locationState = location.state as { store?: any; sport?: string } | null;
-  
-  // TODO: storeId를 사용하여 API에서 매장 정보 가져오기
-  // 현재는 location.state에서 받은 정보를 사용하거나 mock 데이터 사용
-  const storeInfo: StoreInfo = locationState?.store
-    ? {
-        name: locationState.store.name,
-        address: locationState.store.address,
-        addressDescription: mockStoreInfo.addressDescription, // API에서 가져올 예정
-        businessHours: mockStoreInfo.businessHours, // API에서 가져올 예정
-        phoneNumber: mockStoreInfo.phoneNumber, // API에서 가져올 예정
-        description: mockStoreInfo.description, // API에서 가져올 예정
-        images: [locationState.store.image, ...mockStoreInfo.images.slice(1)], // 첫 번째 이미지는 선택한 매장의 이미지
+  const locationState = location.state as {
+    store?: any;
+    sport?: string;
+  } | null;
+
+  // API에서 가져온 매장 정보 상태
+  const [storeInfo, setStoreInfo] = useState<StoreInfo>(mockStoreInfo);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API에서 매장 상세정보 가져오기
+  useEffect(() => {
+    const fetchStoreInfo = async () => {
+      if (!storeId) {
+        // storeId가 없으면 location.state에서 받은 정보 또는 mock 데이터 사용
+        if (locationState?.store) {
+          setStoreInfo({
+            name: locationState.store.name,
+            address: locationState.store.address,
+            addressDescription: mockStoreInfo.addressDescription,
+            businessHours: mockStoreInfo.businessHours,
+            phoneNumber: mockStoreInfo.phoneNumber,
+            description: mockStoreInfo.description,
+            images: [
+              locationState.store.image,
+              ...mockStoreInfo.images.slice(1),
+            ],
+          });
+        }
+        setIsLoading(false);
+        return;
       }
-    : mockStoreInfo;
-  
-  const reviews = mockReviews; // TODO: API에서 가져올 예정
-  const [activeTab, setActiveTab] = useState<"info" | "map">("info");
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const facilityId = parseInt(storeId, 10);
+        if (isNaN(facilityId)) {
+          throw new Error("유효하지 않은 매장 ID입니다.");
+        }
+
+        const response = await getFacilityDetail(facilityId);
+
+        if (response.isSuccess && response.data) {
+          const apiData = response.data;
+
+          // businessHours를 weekdayHours, weekendHours, holidayClosedInfo를 합쳐서 구성
+          const businessHours = [
+            `평일: ${apiData.weekdayHours}`,
+            `주말: ${apiData.weekendHours}`,
+            apiData.holidayClosedInfo,
+          ]
+            .filter(Boolean)
+            .join("\n");
+
+          // 임시 이미지 배열 (나중에 API에서 이미지 URL을 받으면 교체)
+          const tempImages = mockStoreInfo.images;
+
+          const mappedStoreInfo: StoreInfo = {
+            name: apiData.name,
+            address: apiData.address,
+            addressDescription: apiData.accessGuide,
+            businessHours: businessHours,
+            phoneNumber: apiData.contact,
+            description: apiData.features,
+            images: tempImages,
+          };
+
+          setStoreInfo(mappedStoreInfo);
+        } else {
+          throw new Error(
+            response.message || "매장 정보를 가져오는데 실패했습니다."
+          );
+        }
+      } catch (err) {
+        console.error("매장 정보 조회 실패:", err);
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("매장 정보를 가져오는데 실패했습니다.");
+        }
+
+        // 에러 발생 시 location.state 또는 mock 데이터 사용
+        if (locationState?.store) {
+          setStoreInfo({
+            name: locationState.store.name,
+            address: locationState.store.address,
+            addressDescription: mockStoreInfo.addressDescription,
+            businessHours: mockStoreInfo.businessHours,
+            phoneNumber: mockStoreInfo.phoneNumber,
+            description: mockStoreInfo.description,
+            images: [
+              locationState.store.image,
+              ...mockStoreInfo.images.slice(1),
+            ],
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStoreInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeId]);
+
+  // 리뷰 관련 상태
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const reviewListRef = useRef<HTMLDivElement>(null);
   const [sortOrder, setSortOrder] = useState<"latest" | "recommended">(
     "latest"
   );
+
+  // 리뷰 데이터 가져오기
+  const fetchReviews = useCallback(
+    async (page: number = 0, append: boolean = false) => {
+      if (!storeId) return;
+
+      const facilityId = parseInt(storeId, 10);
+      if (isNaN(facilityId)) {
+        setReviewError("유효하지 않은 매장 ID입니다.");
+        return;
+      }
+
+      try {
+        if (append) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoadingReviews(true);
+          setReviewError(null);
+        }
+
+        // sortOrder에 따라 sort 파라미터 설정
+        const sortParam =
+          sortOrder === "latest" ? "createdAt,desc" : "createdAt,desc"; // 추천순은 나중에 API에서 지원하면 변경
+
+        const response = await getFacilityReviews(
+          facilityId,
+          page,
+          5,
+          sortParam
+        );
+
+        if (response.isSuccess && response.data) {
+          const apiReviews = response.data.content;
+
+          // API 응답을 Review 인터페이스로 변환
+          const mappedReviews: Review[] = apiReviews.map((apiReview) => ({
+            id: apiReview.reviewId.toString(),
+            author: apiReview.username,
+            authorImage:
+              "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/TZt8ki3AkK.png", // 기본 이미지 (나중에 API에서 받으면 교체)
+            date: apiReview.createdAt,
+            comment: apiReview.comment,
+            helpfulCount: 0, // API에서 받지 않으므로 기본값
+            isHelpful: false, // API에서 받지 않으므로 기본값
+            isOwner: false, // API에서 받지 않으므로 기본값
+          }));
+
+          if (append) {
+            // 기존 리뷰에 추가
+            setReviews((prev) => [...prev, ...mappedReviews]);
+          } else {
+            // 새로 설정
+            setReviews(mappedReviews);
+          }
+
+          setIsLastPage(response.data.last);
+          setCurrentPage(page);
+        } else {
+          throw new Error(
+            response.message || "리뷰를 가져오는데 실패했습니다."
+          );
+        }
+      } catch (err) {
+        console.error("리뷰 조회 실패:", err);
+        if (err instanceof ApiError) {
+          setReviewError(err.message);
+        } else if (err instanceof Error) {
+          setReviewError(err.message);
+        } else {
+          setReviewError("리뷰를 가져오는데 실패했습니다.");
+        }
+
+        // 에러 발생 시 빈 배열로 설정
+        if (!append) {
+          setReviews([]);
+        }
+      } finally {
+        setIsLoadingReviews(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [storeId, sortOrder]
+  );
+
+  // 리뷰 초기 로드 및 정렬 변경 시 재로드
+  useEffect(() => {
+    if (storeId) {
+      setCurrentPage(0);
+      setIsLastPage(false);
+      fetchReviews(0, false);
+    }
+  }, [storeId, sortOrder, fetchReviews]);
+
+  // 무한 스크롤 처리
+  useEffect(() => {
+    const reviewList = reviewListRef.current;
+    if (!reviewList) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = reviewList;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px 전에 로드
+
+      if (isNearBottom && !isLastPage && !isLoadingMore && !isLoadingReviews) {
+        const nextPage = currentPage + 1;
+        fetchReviews(nextPage, true);
+      }
+    };
+
+    reviewList.addEventListener("scroll", handleScroll);
+    return () => {
+      reviewList.removeEventListener("scroll", handleScroll);
+    };
+  }, [currentPage, isLastPage, isLoadingMore, isLoadingReviews, fetchReviews]);
+
+  const [activeTab, setActiveTab] = useState<"info" | "map">("info");
   const [imageScrollPosition, setImageScrollPosition] = useState(0);
   const [reviewStates, setReviewStates] = useState<Record<string, Review>>(
     () => {
@@ -136,7 +314,9 @@ export const StoreInformation: React.FC = () => {
     address: false,
     description: false,
   });
-  const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({});
+  const [expandedReviews, setExpandedReviews] = useState<
+    Record<string, boolean>
+  >({});
   const imageGridRef = useRef<HTMLDivElement>(null);
 
   // reviews prop이 변경되면 reviewStates 업데이트 (단, 기존 isHelpful 상태는 유지)
@@ -162,7 +342,11 @@ export const StoreInformation: React.FC = () => {
 
   const handlePackageAdd = () => {
     // 패키지 담기 로직
-    console.log("패키지 담기", { storeId, storeInfo, sport: locationState?.sport });
+    console.log("패키지 담기", {
+      storeId,
+      storeInfo,
+      sport: locationState?.sport,
+    });
     // TODO: 패키지에 매장 추가 API 호출
     // 추가 후 Create 페이지로 돌아가면서 선택된 매장 정보 전달
     navigate("/create", {
@@ -201,7 +385,9 @@ export const StoreInformation: React.FC = () => {
     const gap = 8; // 이미지 간 간격
     const scrollAmount = imageWidth + gap;
     const containerWidth = imageGridRef.current.offsetWidth;
-    const totalWidth = storeInfo.images.length * imageWidth + (storeInfo.images.length - 1) * gap;
+    const totalWidth =
+      storeInfo.images.length * imageWidth +
+      (storeInfo.images.length - 1) * gap;
     const maxScroll = Math.max(0, totalWidth - containerWidth);
 
     let newPosition: number;
@@ -238,19 +424,21 @@ export const StoreInformation: React.FC = () => {
   // 리뷰 정렬 함수
   const sortedReviews = useMemo(() => {
     const reviewsArray = Object.values(reviewStates);
-    
+
     if (sortOrder === "latest") {
       // 최신순: 날짜 기준 내림차순 (최신이 위)
       return [...reviewsArray].sort((a, b) => {
         // 날짜 형식: "YYYY.MM.DD" -> "YYYY-MM-DD"로 변환
         const parseDate = (dateStr: string) => {
           const [year, month, day] = dateStr.split(".");
-          return new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`).getTime();
+          return new Date(
+            `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+          ).getTime();
         };
-        
+
         const dateA = parseDate(a.date);
         const dateB = parseDate(b.date);
-        
+
         // 날짜가 같으면 id로 정렬 (안정적인 정렬)
         if (dateB === dateA) {
           return a.id.localeCompare(b.id);
@@ -264,7 +452,9 @@ export const StoreInformation: React.FC = () => {
         if (b.helpfulCount === a.helpfulCount) {
           const parseDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split(".");
-            return new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`).getTime();
+            return new Date(
+              `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+            ).getTime();
           };
           return parseDate(b.date) - parseDate(a.date);
         }
@@ -275,14 +465,16 @@ export const StoreInformation: React.FC = () => {
 
   // 이미지가 스크롤 가능한지 확인
   const [canScrollImages, setCanScrollImages] = useState(false);
-  
+
   useEffect(() => {
     const checkScrollability = () => {
       if (imageGridRef.current) {
         const imageWidth = 200;
         const gap = 8;
         const containerWidth = imageGridRef.current.offsetWidth;
-        const totalWidth = storeInfo.images.length * imageWidth + (storeInfo.images.length - 1) * gap;
+        const totalWidth =
+          storeInfo.images.length * imageWidth +
+          (storeInfo.images.length - 1) * gap;
         setCanScrollImages(totalWidth > containerWidth);
       }
     };
@@ -315,6 +507,25 @@ export const StoreInformation: React.FC = () => {
       return newState;
     });
   };
+
+  // 로딩 중일 때 표시
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <S.Container>
+          <S.ContentWrapper>
+            <div>로딩 중...</div>
+          </S.ContentWrapper>
+        </S.Container>
+      </>
+    );
+  }
+
+  // 에러가 발생했을 때 표시 (하지만 fallback 데이터는 이미 설정되어 있음)
+  if (error) {
+    console.warn("매장 정보 조회 에러:", error);
+  }
 
   return (
     <>
@@ -349,8 +560,13 @@ export const StoreInformation: React.FC = () => {
                       const imageWidth = 200;
                       const gap = 8;
                       const containerWidth = imageGridRef.current.offsetWidth;
-                      const totalWidth = storeInfo.images.length * imageWidth + (storeInfo.images.length - 1) * gap;
-                      const maxScroll = Math.max(0, totalWidth - containerWidth);
+                      const totalWidth =
+                        storeInfo.images.length * imageWidth +
+                        (storeInfo.images.length - 1) * gap;
+                      const maxScroll = Math.max(
+                        0,
+                        totalWidth - containerWidth
+                      );
                       return imageScrollPosition >= maxScroll - 1; // 1px 오차 허용
                     })()}
                     aria-label="다음 이미지"
@@ -359,7 +575,11 @@ export const StoreInformation: React.FC = () => {
               )}
               <S.ImageGrid ref={imageGridRef}>
                 {storeInfo.images.map((image, index) => (
-                  <S.StoreImage key={index} src={image} alt={`매장 이미지 ${index + 1}`} />
+                  <S.StoreImage
+                    key={index}
+                    src={image}
+                    alt={`매장 이미지 ${index + 1}`}
+                  />
                 ))}
               </S.ImageGrid>
             </S.StoreImages>
@@ -396,9 +616,7 @@ export const StoreInformation: React.FC = () => {
                     <S.DirectionIcon />
                   </S.DetailIcon>
                   <S.DetailContent>
-                    <S.DirectionsText
-                      $expanded={expandedSections.address}
-                    >
+                    <S.DirectionsText $expanded={expandedSections.address}>
                       {formatAddressDescription(storeInfo.addressDescription)}
                     </S.DirectionsText>
                     <S.MoreButton
@@ -422,7 +640,9 @@ export const StoreInformation: React.FC = () => {
                   <S.DetailIcon>
                     <S.ClockIcon />
                   </S.DetailIcon>
-                  <S.BusinessHours>{storeInfo.businessHours}</S.BusinessHours>
+                  <S.BusinessHours>
+                    {formatAddressDescription(storeInfo.businessHours)}
+                  </S.BusinessHours>
                 </S.DetailRow>
 
                 {/* 전화번호 */}
@@ -469,7 +689,7 @@ export const StoreInformation: React.FC = () => {
 
           {/* 우측: 리뷰 섹션 */}
           <S.ReviewSection>
-            <S.ReviewContainer>
+            <S.ReviewContainer ref={reviewListRef}>
               <S.ReviewHeader>
                 <S.ReviewTitle>리뷰</S.ReviewTitle>
                 <S.SortMenu>
@@ -490,74 +710,95 @@ export const StoreInformation: React.FC = () => {
               </S.ReviewHeader>
 
               <S.ReviewList>
-                {sortedReviews.map((review) => (
-                <S.ReviewItem key={review.id}>
-                  <S.ReviewAvatar>
-                    <S.AvatarImage
-                      style={{
-                        backgroundImage: `url(${review.authorImage})`,
-                      }}
-                    />
-                  </S.ReviewAvatar>
-                  <S.ReviewContent>
-                    <S.ReviewHeaderRow>
-                      <S.ReviewAuthor>{review.author}</S.ReviewAuthor>
-                      <S.ReviewDateWrapper>
-                        {review.isOwner && (
-                          <S.ReviewActions>
-                            <S.ReviewAction>수정</S.ReviewAction>
-                            <S.ReviewActionSeparator>|</S.ReviewActionSeparator>
-                            <S.ReviewAction>삭제</S.ReviewAction>
-                          </S.ReviewActions>
-                        )}
-                        <S.ReviewDate>{review.date}</S.ReviewDate>
-                      </S.ReviewDateWrapper>
-                    </S.ReviewHeaderRow>
-                    {review.comment.length <= 50 ? (
-                      <S.ReviewCommentShort>{review.comment}</S.ReviewCommentShort>
-                    ) : (
-                      <>
-                        <S.ReviewComment $expanded={expandedReviews[review.id]}>
-                          {review.comment}
-                        </S.ReviewComment>
-                        <S.MoreButton
-                          onClick={() =>
-                            setExpandedReviews((prev) => ({
-                              ...prev,
-                              [review.id]: !prev[review.id],
-                            }))
-                          }
-                        >
-                          <S.MoreText>
-                            {expandedReviews[review.id] ? "접기" : "더보기"}
-                          </S.MoreText>
-                          <S.MoreIcon $expanded={expandedReviews[review.id]} />
-                        </S.MoreButton>
-                      </>
-                    )}
-                    <S.ReviewFooter>
-                      <S.HelpfulText>도움이 됐어요</S.HelpfulText>
-                      <S.HelpfulButton
-                        active={review.isHelpful}
-                        onClick={() => handleHelpfulClick(review.id)}
-                      >
-                        <S.ThumbsUpIcon
+                {isLoadingReviews && reviews.length === 0 ? (
+                  <div>리뷰를 불러오는 중...</div>
+                ) : reviewError && reviews.length === 0 ? (
+                  <div>리뷰를 불러오는데 실패했습니다: {reviewError}</div>
+                ) : reviews.length === 0 ? (
+                  <div>리뷰가 없습니다.</div>
+                ) : (
+                  sortedReviews.map((review) => (
+                    <S.ReviewItem key={review.id}>
+                      <S.ReviewAvatar>
+                        <S.AvatarImage
                           style={{
-                            backgroundImage: `url(${
-                              review.isHelpful
-                                ? "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/1REhZAN5hm.png"
-                                : "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/oBZvPj2DXM.png"
-                            })`,
+                            backgroundImage: `url(${review.authorImage})`,
                           }}
                         />
-                        <S.HelpfulCount active={review.isHelpful}>
-                          {review.helpfulCount}
-                        </S.HelpfulCount>
-                      </S.HelpfulButton>
-                    </S.ReviewFooter>
-                  </S.ReviewContent>
-                </S.ReviewItem>
-                ))}
+                      </S.ReviewAvatar>
+                      <S.ReviewContent>
+                        <S.ReviewHeaderRow>
+                          <S.ReviewAuthor>{review.author}</S.ReviewAuthor>
+                          <S.ReviewDateWrapper>
+                            {review.isOwner && (
+                              <S.ReviewActions>
+                                <S.ReviewAction>수정</S.ReviewAction>
+                                <S.ReviewActionSeparator>
+                                  |
+                                </S.ReviewActionSeparator>
+                                <S.ReviewAction>삭제</S.ReviewAction>
+                              </S.ReviewActions>
+                            )}
+                            <S.ReviewDate>{review.date}</S.ReviewDate>
+                          </S.ReviewDateWrapper>
+                        </S.ReviewHeaderRow>
+                        {review.comment.length <= 50 ? (
+                          <S.ReviewCommentShort>
+                            {review.comment}
+                          </S.ReviewCommentShort>
+                        ) : (
+                          <>
+                            <S.ReviewComment
+                              $expanded={expandedReviews[review.id]}
+                            >
+                              {review.comment}
+                            </S.ReviewComment>
+                            <S.MoreButton
+                              onClick={() =>
+                                setExpandedReviews((prev) => ({
+                                  ...prev,
+                                  [review.id]: !prev[review.id],
+                                }))
+                              }
+                            >
+                              <S.MoreText>
+                                {expandedReviews[review.id] ? "접기" : "더보기"}
+                              </S.MoreText>
+                              <S.MoreIcon
+                                $expanded={expandedReviews[review.id]}
+                              />
+                            </S.MoreButton>
+                          </>
+                        )}
+                        <S.ReviewFooter>
+                          <S.HelpfulText>도움이 됐어요</S.HelpfulText>
+                          <S.HelpfulButton
+                            active={review.isHelpful}
+                            onClick={() => handleHelpfulClick(review.id)}
+                          >
+                            <S.ThumbsUpIcon
+                              style={{
+                                backgroundImage: `url(${
+                                  review.isHelpful
+                                    ? "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/1REhZAN5hm.png"
+                                    : "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/oBZvPj2DXM.png"
+                                })`,
+                              }}
+                            />
+                            <S.HelpfulCount active={review.isHelpful}>
+                              {review.helpfulCount}
+                            </S.HelpfulCount>
+                          </S.HelpfulButton>
+                        </S.ReviewFooter>
+                      </S.ReviewContent>
+                    </S.ReviewItem>
+                  ))
+                )}
+                {isLoadingMore && (
+                  <div style={{ padding: "16px", textAlign: "center" }}>
+                    더 많은 리뷰를 불러오는 중...
+                  </div>
+                )}
               </S.ReviewList>
             </S.ReviewContainer>
 

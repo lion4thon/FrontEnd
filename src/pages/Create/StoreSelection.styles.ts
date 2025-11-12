@@ -12,6 +12,10 @@ export const Frame = styled.div`
   gap: 48px;
   padding: 32px;
   position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 `;
 
 export const Div = styled.div`
