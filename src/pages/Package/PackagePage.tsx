@@ -190,7 +190,7 @@ export default function PackagePage() {
   };
   const handleGoSurvey = () => {
     setOpenSurvey(false);
-    nav("/survey/start"); // 설문 시작 모달로 이동
+    nav("/package/survey"); // 설문 시작 모달로 이동
   };
 
   const toggleTag = (tag: string) => {
