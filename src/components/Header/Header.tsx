@@ -6,8 +6,10 @@ import BK from "../../assets/MOV.svg";
 import Dialog from "../Dialog/Dialog";
 import LoginModalBody from "../Account/LoginModal";
 import { useAuth } from "../../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
   const [openLogin, setOpenLogin] = useState(false);
   const { isLoggedIn, logout } = useAuth();
 
