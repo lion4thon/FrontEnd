@@ -5,11 +5,12 @@ import * as S from "./StoreSelection.styles";
 import { DivWrapper } from "./StoreSelection/DivWrapper";
 import "../../styles/styleguide.css";
 import vector65 from "../../assets/Vector 65.png";
-import { getStoresBySport } from "../../utils/api";
+// import { getStoresBySport } from "../../utils/api";
+import { getFacilitiesBySportName } from "./apis/facilities";
 import { convertApiStoreToStore, type Store } from "../../utils/storeConverter";
 
 // 임시 종목 데이터 (나중에 API로 대체)
-const SPORTS = ["필라테스", "요가", "헬스 트레이닝"];
+const SPORTS = ["필라테스", "요가", "스트레칭", "PT", "수영", "배드민턴", "클라이밍"];
 
 const STORAGE_KEY_SPORTS = "mov-create-selectedSports";
 const STORAGE_KEY_STORES = "mov-create-selectedStores";
@@ -202,7 +203,7 @@ const lastHandledAddedStoreIdRef = useRef<string | null>(null);
     setLoadingStores(newLoadingStores);
 
     try {
-      const response = await getStoresBySport(sport);
+      const response = await getFacilitiesBySportName(sport);
       if (response.isSuccess && response.data) {
         const stores = response.data.content.map(convertApiStoreToStore);
         const updatedStoresBySport = [...storesBySport];
@@ -448,10 +449,11 @@ const handleSearchStoreSelect = (store: Store) => {
                               style={{
                                 padding: "20px",
                                 textAlign: "center",
-                                color: "#d92d20",
+                                // color: "#d92d20",
                               }}
                             >
-                              {storeErrors[index]}
+                              {/* {storeErrors[index]} */}
+                              매장이 없습니다
                             </div>
                           ) : storesBySport[index].length > 0 ? (
                             storesBySport[index].map((store) => (

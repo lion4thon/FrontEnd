@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import * as S from "./Complete.styles";
-import MOVLogo from "../../assets/MOV.svg";
+import MOVLogo from "../../assets/Create_mov.svg";
 
 interface CompleteProps {
   isOpen: boolean;

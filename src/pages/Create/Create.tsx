@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef } from "react";
 import * as S from "./Create.styles";
 import { Description } from "./Description";
 import { StoreSelection } from "./StoreSelection";
@@ -13,6 +12,8 @@ import { createPass } from "./apis/pass";
 import type { CreatePassRequest } from "./apis/pass";
 import type { Store } from "../../utils/storeConverter";
 
+import { useNavigate } from "react-router-dom";
+
 export const Create: React.FC = () => {
   const [packageName, setPackageName] = useState("");
   const [packageDescription, setPackageDescription] = useState("");
@@ -23,6 +24,8 @@ export const Create: React.FC = () => {
   ]);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const submitLockRef = useRef(false);
+
   const navigate = useNavigate();
 
   const handlePackageCreate = () => {
@@ -55,11 +58,17 @@ export const Create: React.FC = () => {
   };
 
   const handleAddToCart = async () => {
+    if (submitLockRef.current) {
+      console.warn("[ADD_TO_CART] 이미 처리 중입니다. 중복 호출 방지");
+      return;
+    }
+    submitLockRef.current = true;
+    console.log("[ADD_TO_CART] 호출됨");
     try {
       setIsCreating(true);
 
       const facilityIds = getSelectedStoreIds();
-      // 같은 매장이 여러 슬롯에 들어가 있어도 한 번만 보내도록 중복 제거
+      // 같은 매장이 여러 슬롯에 있어도 한 번만 보내도록 중복 제거
       const facilityIdList = Array.from(new Set(facilityIds));
       const passPrice = calculateTotalPrice();
 
@@ -86,7 +95,12 @@ export const Create: React.FC = () => {
         console.log("패키지 생성 성공:", response.message);
         // 성공 시 모달 닫기
         setIsCompleteModalOpen(false);
+        // TODO: 성공 시 처리 (예: 장바구니 페이지로 이동)
+        alert("패키지가 장바구니에 추가되었습니다.");
+        localStorage.removeItem("mov-create-selectedSports");
+        localStorage.removeItem("mov-create-selectedStores");
         navigate("/cart");
+
       } else {
         throw new Error(response.message || "패키지 생성에 실패했습니다.");
       }
@@ -100,15 +114,23 @@ export const Create: React.FC = () => {
         alert("패키지 생성에 실패했습니다.");
       }
     } finally {
+      submitLockRef.current = false;
       setIsCreating(false);
     }
   };
 
   const handleSaveToStorage = async () => {
+    if (submitLockRef.current) {
+      console.warn("[SAVE_TO_STORAGE] 이미 처리 중입니다. 중복 호출 방지");
+      return;
+    }
+    submitLockRef.current = true;
+    console.log("[SAVE_TO_STORAGE] 호출됨");
     try {
       setIsCreating(true);
 
-      const facilityIdList = getSelectedStoreIds();
+      const facilityIds = getSelectedStoreIds();
+      const facilityIdList = Array.from(new Set(facilityIds));
       const passPrice = calculateTotalPrice();
 
       if (facilityIdList.length === 0) {
@@ -116,6 +138,9 @@ export const Create: React.FC = () => {
         setIsCreating(false);
         return;
       }
+
+      console.log("[DEBUG] [LOCKER] 선택된 매장 ID들:", facilityIds);
+      console.log("[DEBUG] [LOCKER] 중복 제거 후 ID들:", facilityIdList);
 
       const request: CreatePassRequest = {
         facilityIdList,
@@ -133,6 +158,9 @@ export const Create: React.FC = () => {
         setIsCompleteModalOpen(false);
         // TODO: 성공 시 처리 (예: 보관함에 저장 완료 메시지)
         alert("패키지가 보관함에 저장되었습니다.");
+        localStorage.removeItem("mov-create-selectedSports");
+        localStorage.removeItem("mov-create-selectedStores");
+        navigate("/mypage");
       } else {
         throw new Error(response.message || "패키지 생성에 실패했습니다.");
       }
@@ -146,6 +174,7 @@ export const Create: React.FC = () => {
         alert("패키지 생성에 실패했습니다.");
       }
     } finally {
+      submitLockRef.current = false;
       setIsCreating(false);
     }
   };

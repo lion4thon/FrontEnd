@@ -540,7 +540,7 @@ const formatAddressDescription = (text?: string | null) => {
           <S.StoreInfoSection>
             {/* 매장 헤더 */}
             <S.StoreHeader>
-              <S.StoreNameWrapper>
+              <S.StoreNameWrapper onClick={() => navigate(-1)}>
                 <S.StoreVerifiedIcon />
                 <S.StoreName>{storeInfo.name}</S.StoreName>
               </S.StoreNameWrapper>

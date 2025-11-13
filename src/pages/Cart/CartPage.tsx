@@ -8,6 +8,7 @@ import checkIcon from "../../assets/double-check.svg";
 import { api } from "../../lib/api";
 import PayModal from "./components/PayModal";
 import { requestPayment } from "./apis/payment"; 
+import { getMyPasses, getCartPasses } from "./apis/myPasses";
 
 export type SessionItemType = {
   id: number;
@@ -94,6 +95,27 @@ const mapSummaryToCartItem = (pkg: SummaryPackageDto): CartItemType => ({
     datetime: s.datetime,
     selected: s.selected ?? false,
   })),
+  
+});
+
+// /api/my-passes 응답을 CartItemType으로 변환
+const mapMyPassToCartItem = (pass: MyPassDto): CartItemType => ({
+  id: pass.passId,
+  name: pass.passName,
+  description: pass.passDescription,
+  image: thumb,            // 서버에서 이미지가 없으니 기본 썸네일 사용
+  price: pass.passPrice,
+  // passItem에는 시설 이름/종목 정보만 있어서 일단 최소 정보만 세션으로 매핑
+  sessions: pass.passItem.map((item) => ({
+    id: item.facilityId,
+    category: item.sportName,
+    name: item.facilityName,
+    address: "",          // 응답에 없으니 일단 빈 값
+    type: "",             // 마찬가지
+    price: 0,             // 상세 가격이 없으면 0으로 둠 (나중에 확장 가능)
+    image: thumb,
+    selected: false,
+  })),
 });
 
 export default function CartPage() {
@@ -176,7 +198,7 @@ export default function CartPage() {
   // ]);
 
 
-  const [cartItems, setCartItems] = useState<CartItemType[]>([]); // ✅ 초기값은 빈 배열
+  const [cartItems, setCartItems] = useState<CartItemType[]>([]); // 초기값은 빈 배열
   const [, setLoading] = useState(false);
   const [, setError] = useState<string | null>(null);
   const [summaryTotal, setSummaryTotal] = useState(0);
@@ -206,38 +228,69 @@ export default function CartPage() {
 
   // 장바구니(예약 목록) 조회
 // 장바구니(예약 목록) 조회
+// useEffect(() => {
+//   const fetchSummary = async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
+
+//       const res = await api.get<SummaryResponse>("/api/summary");
+//       console.log("[SUMMARY RAW]", res.data);
+
+//       const { passName, totalPrice } = res.data.data;
+
+//       // 패키지 이름 배열을 CartItem으로 변환
+//       const items: CartItemType[] = passName.map((name, index) => ({
+//         id: index + 1,
+//         name,
+//         image: thumb,
+//         price: 0,        // 서버에서 패키지별 가격이 안 오기 때문에 일단 0으로 둠
+//         sessions: [],    // /summary에는 세션 정보가 없어서 빈 배열
+//       }));
+
+//       setCartItems(items);
+//       // totalPrice는 필요하면 따로 state로 들고가도 됨
+//       setSummaryTotal(totalPrice);
+//     } catch (e) {
+//       console.error("예약 목록 조회 실패", e);
+//       setError("예약 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchSummary();
+// }, []);
+
 useEffect(() => {
-  const fetchSummary = async () => {
+  const fetchCart = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await api.get<SummaryResponse>("/api/summary");
-      console.log("[SUMMARY RAW]", res.data);
+      // /api/my-passes?status=IN_CART 호출
+      const res = await getCartPasses();
+      console.log("[MY PASSES RAW]", res);
 
-      const { passName, totalPrice } = res.data.data;
+      const passes = res.data; // MyPassDto[]
 
-      // 패키지 이름 배열을 CartItem으로 변환
-      const items: CartItemType[] = passName.map((name, index) => ({
-        id: index + 1,
-        name,
-        image: thumb,
-        price: 0,        // 서버에서 패키지별 가격이 안 오기 때문에 일단 0으로 둠
-        sessions: [],    // /summary에는 세션 정보가 없어서 빈 배열
-      }));
+      // 장바구니 아이템으로 변환
+      const items: CartItemType[] = passes.map(mapMyPassToCartItem);
 
       setCartItems(items);
-      // totalPrice는 필요하면 따로 state로 들고가도 됨
-      setSummaryTotal(totalPrice);
+
+      // 총 결제 금액은 passPrice 합으로 계산
+      const total = passes.reduce((sum, p) => sum + p.passPrice, 0);
+      setSummaryTotal(total);
     } catch (e) {
-      console.error("예약 목록 조회 실패", e);
+      console.error("생성한 패키지 조회 실패", e);
       setError("예약 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
   };
 
-  fetchSummary();
+  fetchCart();
 }, []);
 
 
