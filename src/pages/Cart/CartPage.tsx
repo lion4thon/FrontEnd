@@ -9,6 +9,8 @@ import { api } from "../../lib/api";
 import PayModal from "./components/PayModal";
 import { requestPayment } from "./apis/payment"; 
 import { getMyPasses, getCartPasses } from "./apis/myPasses";
+import type { MyPassDto } from "./apis/myPasses";
+import { createReservation } from "./apis/reservation";
 
 export type SessionItemType = {
   id: number;
@@ -118,6 +120,8 @@ const mapMyPassToCartItem = (pass: MyPassDto): CartItemType => ({
   })),
 });
 
+
+
 export default function CartPage() {
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -126,6 +130,106 @@ export default function CartPage() {
       document.body.style.overflow = prev;
     };
   }, []);
+
+const toIsoString = (datetime: string) => {
+  if (!datetime) return "";
+
+  // 1) 이미 ISO 형태인 경우 (예: "2025-12-27T10:00" 또는 "2025-12-27T10:00:00")
+  if (datetime.includes("T")) {
+    // "YYYY-MM-DDTHH:mm" 이면 뒤에 ":00"만 붙여줌
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(datetime)) {
+      return `${datetime}:00`;
+    }
+    // 이미 초까지 있으면 그대로 사용
+    return datetime;
+  }
+
+  // 2) 한국식 포맷: "YYYY. MM. DD(요일) HH:mm"
+  // 예: "2025. 11. 16(일) 09:00"
+  const krMatch = datetime.match(
+    /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\([^)]*\)\s*(\d{1,2}):(\d{2})/
+  );
+
+  if (krMatch) {
+    const [, year, month, day, hour, minute] = krMatch;
+
+    const mm = month.padStart(2, "0");
+    const dd = day.padStart(2, "0");
+    const hh = hour.padStart(2, "0");
+
+    return `${year}-${mm}-${dd}T${hh}:${minute}:00`;
+  }
+
+  // 3) 혹시 모를 다른 한국식 포맷: "YYYY. MM. DD HH:mm" (요일 없이)
+  const dotMatch = datetime.match(
+    /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s+(\d{1,2}):(\d{2})/
+  );
+
+  if (dotMatch) {
+    const [, year, month, day, hour, minute] = dotMatch;
+
+    const mm = month.padStart(2, "0");
+    const dd = day.padStart(2, "0");
+    const hh = hour.padStart(2, "0");
+
+    return `${year}-${mm}-${dd}T${hh}:${minute}:00`;
+  }
+
+  // 4) 마지막 fallback: "YYYY-MM-DD HH:mm" 형태인 경우
+  const spaceMatch = datetime.match(
+    /(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})/
+  );
+
+  if (spaceMatch) {
+    const [, year, month, day, hour, minute] = spaceMatch;
+    const mm = month.padStart(2, "0");
+    const dd = day.padStart(2, "0");
+    const hh = hour.padStart(2, "0");
+
+    return `${year}-${mm}-${dd}T${hh}:${minute}:00`;
+  }
+
+  console.warn("[WARN] unexpected datetime format:", datetime);
+  return datetime;
+};
+
+const buildReservationPayloads = () => {
+  console.log("[DEBUG] cartItems in buildReservationPayloads", cartItems);
+
+  const payloads: {
+    facilityId: number;
+    passId: number;
+    startTime: string;
+    endTime: string;
+  }[] = [];
+
+  for (const pkg of cartItems) {
+    for (const s of pkg.sessions || []) {
+      if (s.selected && s.datetime) {
+        const start = toIsoString(s.datetime);
+        const end = start; // 지금은 시작/종료 동일하게
+
+        console.log(
+          "[DEBUG] reservation unit",
+          s.id,
+          "datetime:",
+          s.datetime,
+          "->",
+          start
+        );
+
+        payloads.push({
+          facilityId: s.id, // facilityId
+          passId: pkg.id,   // 패키지(pass) ID
+          startTime: start,
+          endTime: end,
+        });
+      }
+    }
+  }
+
+  return payloads;
+};
 
   // const [cartItems, setCartItems] = useState<CartItemType[]>([
   //   {
@@ -206,7 +310,27 @@ export default function CartPage() {
   const [isPaying, setIsPaying] = useState(false);
 
 
- const handlePay = async () => {
+//  const handlePay = async () => {
+//   if (isPaying || summaryTotal <= 0) return;
+
+//   try {
+//     setIsPaying(true);
+
+//     const passIds = reservedPackages.map((pkg) => pkg.id);
+//     console.log("[PAY REQUEST]", passIds);
+
+//     const result = await requestPayment(passIds);
+//     console.log("[PAY RESULT]", result);
+
+//     setIsPayModalOpen(false);
+//   } catch (e) {
+//     console.error("결제 실패", e);
+//   } finally {
+//     setIsPaying(false);
+//   }
+// };
+
+const handlePay = async () => {
   if (isPaying || summaryTotal <= 0) return;
 
   try {
@@ -218,9 +342,20 @@ export default function CartPage() {
     const result = await requestPayment(passIds);
     console.log("[PAY RESULT]", result);
 
+    // 결제 성공이라고 판단되면 여기서 예약 생성
+    const reservationPayloads = buildReservationPayloads();
+    console.log("[RESERVATION PAYLOADS]", reservationPayloads);
+
+    await Promise.all(
+      reservationPayloads.map((payload) => createReservation(payload))
+    );
+
+    // 모달 닫기
     setIsPayModalOpen(false);
+
+    // TODO: 필요하면 장바구니 초기화, 마이페이지로 이동 등 처리
   } catch (e) {
-    console.error("결제 실패", e);
+    console.error("결제 또는 예약 생성 실패", e);
   } finally {
     setIsPaying(false);
   }

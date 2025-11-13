@@ -5,19 +5,36 @@ import { api } from "../../../lib/api";
 export type MyPassStatus = "IN_CART" | "IN_LOCKER" | "OWNED" | "COMPLETED";
 
 // 서버 DTO 타입들
-export type PassItemDto = {
+// export type PassItemDto = {
+//   facilityId: number;
+//   facilityName: string;
+//   sportName: string;
+// };
+
+// export type MyPassDto = {
+//   passId: number;
+//   passName: string;
+//   passPrice: number;
+//   passDescription: string;
+//   passItem: PassItemDto[];
+// };
+
+
+/** 패키지 안에 들어있는 시설 정보 */
+export interface MyPassItemDto {
   facilityId: number;
   facilityName: string;
   sportName: string;
-};
+}
 
-export type MyPassDto = {
+/** /api/my-passes?status=... 응답의 각 패키지 */
+export interface MyPassDto {
   passId: number;
   passName: string;
   passPrice: number;
   passDescription: string;
-  passItem: PassItemDto[];
-};
+  passItem: MyPassItemDto[];
+}
 
 export type MyPassesResponse = {
   isSuccess: boolean;
