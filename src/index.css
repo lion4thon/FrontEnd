@@ -1,4 +1,10 @@
 /* Reset Vite defaults to fit the MOV design system */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

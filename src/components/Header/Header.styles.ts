@@ -4,10 +4,9 @@ const H = {
   // 전체 헤더 영역
   Container: styled.header`
     display: flex;
-    justify-content: center;
     align-items: center;
     height: 90px;
-    width: 100%;
+    width: 100vw;
     background-color: var(--primary-04);
     border-bottom: 1px solid transparent;
     border-image: linear-gradient(
@@ -19,8 +18,8 @@ const H = {
         rgba(76, 229, 167, 1) 100%
       )
       1;
-    padding: 10px 80px 10px 10px; /* slight left shift */
-    position: sticky;
+    padding: 0;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -40,24 +39,30 @@ const H = {
   Inner: styled.div`
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 32px;
+    justify-content: space-between;
+    gap: 0;
     width: 100%;
-    max-width: 1440px;
+    padding: 0 120px;
+    box-sizing: border-box;
+    position: relative;
   `,
 
   // 로고 이미지
   Logo: styled.img`
-    padding-top: 8px;
+    width: 240px;
+    height: auto;
+    flex-shrink: 0;
+    margin-left: 0;
   `,
 
   // 중앙 네비게이션 메뉴
   NavMenu: styled.nav`
     display: flex;
-    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     align-items: center;
     gap: 80px;
-
     white-space: nowrap; /* FIX: 한글이 문자 단위 줄바꿈 되는 현상 방지 */
   `,
 
@@ -80,7 +85,7 @@ const H = {
   // 우측 로그인/회원가입 영역
   UserMenu: styled.div`
     display: flex;
-    flex: 1;
+    flex-shrink: 0;
     justify-content: flex-end;
     align-items: center;
     gap: 32px;
@@ -93,8 +98,7 @@ const H = {
     font-family: var(--caption-font-family);
     font-size: var(--caption-font-size);
     font-weight: var(--caption-font-weight);
-    color: var(--gray-600);
-    -webkit-text-stroke: 0.25px #ffffff;
+    color: #333333;
     cursor: pointer;
 
     white-space: nowrap; /* FIX */
