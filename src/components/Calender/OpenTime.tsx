@@ -9,12 +9,7 @@ export type TimeSlotGridProps = {
   onSelect: (s: Slot) => void;
 };
 
-export default function TimeSlotGrid({
-  slots,
-  selected,
-  disabledChecker,
-  onSelect,
-}: TimeSlotGridProps) {
+export default function TimeSlotGrid({ slots, selected, disabledChecker, onSelect }: TimeSlotGridProps) {
   return (
     <Wrap>
       {slots.map((s) => {
@@ -37,7 +32,7 @@ export default function TimeSlotGrid({
   );
 }
 
-// 스타일 수정
+// 스타일
 const Wrap = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -47,11 +42,9 @@ const Wrap = styled.div`
 const Btn = styled.button<{ $selected: boolean }>`
   text-align: center;
   border-radius: 28px;
-  border: 1px solid
-    ${({ $selected }) => ($selected ? "rgba(67, 104, 255, .9)" : "#7d818e")};
-  background: ${({ $selected }) =>
-    $selected ? "rgba(67, 104, 255, .08)" : "#fff"};
-  color: ${({ $selected }) => ($selected ? "#4368ff" : "#2c2f36")};
+  border: 1px solid ${({ $selected, theme }) => ($selected ? "rgba(67, 104, 255, .9)" : theme.colors.gray500)};
+  background: ${({ $selected, theme }) => ($selected ? "rgba(67, 104, 255, .08)" : theme.colors.white)};
+  color: ${({ $selected, theme }) => ($selected ? theme.colors.primary : theme.colors.gray800)};
   font-weight: 400;
   font-size: 15px;
   padding: 8px 18px;

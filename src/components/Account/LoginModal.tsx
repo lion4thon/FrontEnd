@@ -93,13 +93,10 @@ export default function LoginModal({ onClose, onSuccess }: Props) {
 
     try {
       // 응답 타입을 SuccessResponse<SignInUserRes> 로 정확히 지정
-      const res = await api.post<SuccessResponse<SignInUserRes>>(
-        "/api/auth/login",
-        {
-          username: te, // 백엔드 SignInUserReq.username
-          password: tp, // 백엔드 SignInUserReq.password
-        }
-      );
+      const res = await api.post<SuccessResponse<SignInUserRes>>("/api/auth/login", {
+        username: te, // 백엔드 SignInUserReq.username
+        password: tp, // 백엔드 SignInUserReq.password
+      });
 
       const tokens = res.data.data;
 
@@ -111,7 +108,6 @@ export default function LoginModal({ onClose, onSuccess }: Props) {
         localStorage.setItem("refresh_token", tokens.refreshToken);
       }
 
-      console.log("로그인 성공!");
       console.log("토큰:", tokens.accessToken); // 토큰 출력
       localStorage.setItem("token", tokens.accessToken);
 
@@ -122,16 +118,19 @@ export default function LoginModal({ onClose, onSuccess }: Props) {
       onSuccess?.();
       onClose();
     } catch (e: unknown) {
+      console.log("로그인 에러 원본:", e);
+
       if (hasResponse(e)) {
+        console.log("서버 응답 전체:", e.response);
+        console.log("서버 응답 데이터:", e.response.data);
+
         const { status, data } = e.response;
 
         if (status === 401 || status === 400) {
           setErr("아이디(또는 이메일) 또는 비밀번호가 올바르지 않습니다.");
         } else {
           const msg = extractMessage(data);
-          setErr(
-            msg ?? "로그인 중 오류가 발생했어요. 잠시 후 다시 시도해주세요."
-          );
+          setErr(msg ?? "로그인 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
         }
       } else {
         setErr("네트워크 오류가 발생했어요. 인터넷 연결을 확인해주세요.");

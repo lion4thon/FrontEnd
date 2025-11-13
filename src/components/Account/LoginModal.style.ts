@@ -43,7 +43,7 @@ export const LogoImg = styled.img`
 
 export const ErrorBanner = styled.div`
   background: #fee4e2;
-  color: #b42318;
+  color: ${({ theme }) => theme.colors.error};
   border: 1px solid #fecdca;
   padding: 10px 12px;
   border-radius: 10px;
@@ -59,13 +59,13 @@ export const Field = styled.div`
 
   label {
     font-size: 18px;
-    color: #374151;
+    color: ${({ theme }) => theme.colors.gray700};
     padding-left: 5px;
   }
 `;
 
 export const FieldError = styled.div`
-  color: #d92d20;
+  color: ${({ theme }) => theme.colors.error};
   font-size: 12px;
   margin-top: 4px;
 `;
@@ -74,18 +74,18 @@ export const Input = styled.input`
   width: 360px;
   height: 47px;
   padding: 0 14px;
-  border: 1px solid #7d818e;
+  border: 1px solid ${({ theme }) => theme.colors.gray500};
   border-radius: 20px;
   outline: none;
   font-size: 15px;
-  background: #eef1f9;
+  background: ${({ theme }) => theme.colors.gray100};
 
   &:focus {
-    border-color: #5b7cff;
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 
   &::placeholder {
-    color: #9aa3af;
+    color: ${({ theme }) => theme.colors.gray400};
   }
 `;
 
@@ -100,8 +100,8 @@ export const Primary = styled.button`
   min-width: 360px;
   border: none;
   border-radius: 20px;
-  background: #4368ff;
-  color: #fff;
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.white};
   font-weight: 600;
   cursor: pointer;
   text-align: center;
@@ -125,7 +125,7 @@ export const HelperRowTop = styled.div`
 
   a {
     font-size: 14px;
-    color: #2c2f36;
+    color: ${({ theme }) => theme.colors.gray800};
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -140,13 +140,13 @@ export const HelperRowBottom = styled.div`
   justify-content: center;
   gap: 24px;
   align-items: center;
-  color: #2c2f36;
+  color: ${({ theme }) => theme.colors.gray800};
   font-size: 14px;
   font-weight: 500;
 
   a {
     font-size: 14px;
     font-weight: 500;
-    color: #2c2f36;
+    color: ${({ theme }) => theme.colors.gray800};
   }
 `;

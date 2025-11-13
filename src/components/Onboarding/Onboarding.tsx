@@ -3,8 +3,15 @@ import * as S from "./Onboarding.styles";
 import "../../styles/styleguide.css";
 import vector64 from "../../assets/vector-64.png";
 import frame122 from "../../assets/Frame-122.png";
+import { useNavigate } from "react-router-dom";
 
 const Onboarding: React.FC = () => {
+  const navigate = useNavigate();
+
+  const start = () => {
+    navigate("/package");
+  };
+
   return (
     <S.Container>
       <S.Inner>
@@ -17,11 +24,9 @@ const Onboarding: React.FC = () => {
             <S.GradientText>Feel the Move!</S.GradientText>
           </S.Title>
 
-          <S.Description>
-            다양한 운동을 부담 없이 즐기며, 나에게 맞는 운동을 탐색해 보세요.
-          </S.Description>
+          <S.Description>다양한 운동을 부담 없이 즐기며, 나에게 맞는 운동을 탐색해 보세요.</S.Description>
 
-          <S.Button>
+          <S.Button onClick={start}>
             <S.ButtonText>MOV 시작하기</S.ButtonText>
             <S.VectorIcon src={vector64} alt="Vector" />
           </S.Button>

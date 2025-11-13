@@ -1,9 +1,4 @@
-import axios, {
-  AxiosError,
-  AxiosHeaders,
-  type InternalAxiosRequestConfig,
-  type AxiosRequestConfig,
-} from "axios";
+import axios, { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig, type AxiosRequestConfig } from "axios";
 
 type RetryableConfig = AxiosRequestConfig & { _retry?: boolean };
 
@@ -17,12 +12,10 @@ const api = axios.create({
 // =====================
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem("access_token");
-  console.log(`${import.meta.env.VITE_API_BASE_URL}`);
 
   if (token) {
     // headers 없으면 AxiosHeaders 인스턴스로 초기화
-    const headers =
-      (config.headers as AxiosHeaders | undefined) ?? new AxiosHeaders();
+    const headers = (config.headers as AxiosHeaders | undefined) ?? new AxiosHeaders();
 
     headers.set("Authorization", `Bearer ${token}`);
 
@@ -63,10 +56,7 @@ api.interceptors.response.use(
         try {
           refreshing = true;
 
-          const { data } = await axios.post(
-            `${api.defaults.baseURL}/api/auth/refresh`,
-            { refresh_token: refresh }
-          );
+          const { data } = await axios.post(`${api.defaults.baseURL}/api/auth/refresh`, { refresh_token: refresh });
 
           const newAccess = data?.access_token as string | undefined;
 

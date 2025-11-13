@@ -69,21 +69,13 @@ export default function MonthCalendar({
   return (
     <Card>
       <Top>
-        <Nav
-          type="button"
-          aria-label="이전 달"
-          onClick={() => onMoveMonth?.(-1)}
-        >
+        <Nav type="button" aria-label="이전 달" onClick={() => onMoveMonth?.(-1)}>
           ‹
         </Nav>
         <Title>
           {year}. {String(month + 1).padStart(2, "0")}
         </Title>
-        <Nav
-          type="button"
-          aria-label="다음 달"
-          onClick={() => onMoveMonth?.(1)}
-        >
+        <Nav type="button" aria-label="다음 달" onClick={() => onMoveMonth?.(1)}>
           ›
         </Nav>
       </Top>
@@ -98,13 +90,7 @@ export default function MonthCalendar({
         {cells.map((c, i) => {
           const sel = !!selected && c.inMonth && isSameDate(c.d, selected);
           return (
-            <Cell
-              key={i}
-              $selected={sel}
-              $inMonth={c.inMonth}
-              $disabled={c.disabled}
-              $today={c.isToday}
-            >
+            <Cell key={i} $selected={sel} $inMonth={c.inMonth} $disabled={c.disabled} $today={c.isToday}>
               <button
                 type="button"
                 disabled={c.disabled || !c.inMonth}
@@ -114,9 +100,7 @@ export default function MonthCalendar({
                   d.setHours(0, 0, 0, 0);
                   onSelect(d);
                 }}
-                aria-label={`${fmtDate(c.d)}${
-                  c.disabled ? " (선택 불가)" : ""
-                }`}
+                aria-label={`${fmtDate(c.d)}${c.disabled ? " (선택 불가)" : ""}`}
                 aria-selected={sel}
               >
                 {c.d.getDate()}
@@ -164,7 +148,7 @@ const Week = styled.div`
   span {
     text-align: center;
     font-size: 12px;
-    color: #9aa1a9;
+    color: ${({ theme }) => theme.colors.gray400};
     padding: 4px 0;
   }
 `;
@@ -187,15 +171,9 @@ const Cell = styled.div<{
     border-radius: 10px;
     border: 1px solid
       ${({ $selected, $today }) =>
-        $selected
-          ? "rgba(67,104,255,.9)"
-          : $today
-          ? "rgba(67,104,255,.35)"
-          : "rgba(0,0,0,0.06)"};
-    background: ${({ $selected }) =>
-      $selected ? "rgba(67,104,255,.08)" : "#fff"};
-    color: ${({ $inMonth, $disabled }) =>
-      !$inMonth || $disabled ? "rgba(0,0,0,0.35)" : "inherit"};
+        $selected ? "rgba(67,104,255,.9)" : $today ? "rgba(67,104,255,.35)" : "rgba(0,0,0,0.06)"};
+    background: ${({ $selected }) => ($selected ? "rgba(67,104,255,.08)" : "#fff")};
+    color: ${({ $inMonth, $disabled }) => (!$inMonth || $disabled ? "rgba(0,0,0,0.35)" : "inherit")};
     font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
     text-align: center;
   }
@@ -203,11 +181,7 @@ const Cell = styled.div<{
 
 /* utils */
 function isSameDate(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 function startOfDay(d: Date) {
   const x = new Date(d);
