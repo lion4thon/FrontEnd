@@ -43,7 +43,7 @@ export const ThumbWrap = styled.div`
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0) 55%,
+      ${({ theme }) => theme.colors.black} 55%,
       rgba(244, 247, 255, 0.85) 88%,
       ${({ theme }) => theme.colors.gray50} 100%
     );
@@ -68,7 +68,7 @@ export const Badge = styled.span`
   padding: 0 12px;
   border-radius: 999px;
   background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.white};
   font-size: 13px;
   font-weight: 500;
   display: inline-flex;
@@ -116,10 +116,7 @@ export const Tags = styled.ul`
     align-items: center;
     padding: 0 10px;
     border-radius: 999px;
-    background: linear-gradient(
-        ${({ theme }) => theme.colors.gray50},
-        ${({ theme }) => theme.colors.gray50}
-      )
+    background: linear-gradient(${({ theme }) => theme.colors.gray50}, ${({ theme }) => theme.colors.gray50})
       padding-box;
     border: 1px solid ${({ theme }) => theme.colors.borderPrimary};
     color: ${({ theme }) => theme.colors.gray700};

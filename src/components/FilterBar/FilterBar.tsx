@@ -3,17 +3,14 @@ import * as S from "./FilterBar.style";
 import {
   PRICE_OPTIONS,
   SORT_OPTIONS,
-  TIME_OPTIONS,
   type FilterBarProps,
 } from "./FilterBar.types";
 
 import priceIcon from "../../assets/price.svg";
-import timeIcon from "../../assets/time.svg";
 import arrayIcon from "../../assets/array.svg";
 import chevronDown from "../../assets/dropdown.svg";
 import chevronUp from "../../assets/dropdown_up.svg";
 import priceIcon2 from "../../assets/price_selected.svg";
-import timeIcon2 from "../../assets/time_selected.svg";
 import arrayIcon2 from "../../assets/array_selected.svg";
 import chevronDown2 from "../../assets/dropdown_selected.svg";
 import chevronUp2 from "../../assets/dropdown_up_selected.svg";
@@ -21,29 +18,22 @@ import chevronUp2 from "../../assets/dropdown_up_selected.svg";
 export default function FilterBar({
   price,
   sort,
-  time,
   onChangePrice,
   onChangeSort,
-  onChangeTime,
 }: FilterBarProps) {
-  const [open, setOpen] = useState({ price: false, sort: false, time: false });
+  const [open, setOpen] = useState({ price: false, sort: false });
 
   const toggle = (key: keyof typeof open) =>
-    setOpen({ price: false, sort: false, time: false, [key]: !open[key] });
+    setOpen({ price: false, sort: false, [key]: !open[key] });
 
   // 선택 여부
   const priceSelected = price !== "전체";
-  const timeSelected = time !== "전체";
   const sortSelected = sort !== "전체";
 
   // 항목 클릭 시 값 설정 + 메뉴 닫기
   const handlePrice = (v: typeof price) => {
     onChangePrice(v);
     setOpen((o) => ({ ...o, price: false }));
-  };
-  const handleTime = (v: typeof time) => {
-    onChangeTime(v);
-    setOpen((o) => ({ ...o, time: false }));
   };
   const handleSort = (v: typeof sort) => {
     onChangeSort(v);
@@ -59,11 +49,11 @@ export default function FilterBar({
           aria-expanded={open.price}
           $selected={priceSelected}
         >
-          <S.LeftIcon src={price !== "전체" ? priceIcon2 : priceIcon} alt="" />
+          <S.LeftIcon src={priceSelected ? priceIcon2 : priceIcon} alt="" />
           <span>{priceSelected ? price : "금액대"}</span>
           <S.RightIcon
             src={
-              price !== "전체"
+              priceSelected
                 ? open.price
                   ? chevronUp2
                   : chevronDown2
@@ -91,45 +81,6 @@ export default function FilterBar({
         )}
       </S.Group>
 
-      {/* 시간대 */}
-      <S.Group>
-        <S.Toggle
-          onClick={() => toggle("time")}
-          aria-expanded={open.time}
-          $selected={timeSelected}
-        >
-          <S.LeftIcon src={time !== "전체" ? timeIcon2 : timeIcon} alt="" />
-          <span>{timeSelected ? time : "시간대"}</span>
-          <S.RightIcon
-            src={
-              time !== "전체"
-                ? open.time
-                  ? chevronUp2
-                  : chevronDown2
-                : open.time
-                ? chevronUp
-                : chevronDown
-            }
-            alt=""
-          />
-        </S.Toggle>
-
-        {open.time && (
-          <S.Menu>
-            <S.Option onClick={() => handleTime("전체")}>전체</S.Option>
-            {TIME_OPTIONS.map((op) => (
-              <S.Option
-                key={op}
-                $active={op === time}
-                onClick={() => handleTime(op)}
-              >
-                {op}
-              </S.Option>
-            ))}
-          </S.Menu>
-        )}
-      </S.Group>
-
       {/* 정렬 */}
       <S.Group>
         <S.Toggle
@@ -137,11 +88,11 @@ export default function FilterBar({
           aria-expanded={open.sort}
           $selected={sortSelected}
         >
-          <S.LeftIcon src={sort !== "전체" ? arrayIcon2 : arrayIcon} alt="" />
+          <S.LeftIcon src={sortSelected ? arrayIcon2 : arrayIcon} alt="" />
           <span>{sortSelected ? sort : "정렬순서"}</span>
           <S.RightIcon
             src={
-              sort !== "전체"
+              sortSelected
                 ? open.sort
                   ? chevronUp2
                   : chevronDown2

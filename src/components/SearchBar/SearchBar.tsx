@@ -4,6 +4,7 @@ import searchIcon from "../../assets/gg_search.svg";
 
 interface Props {
   onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
 export default function SearchBar({ onSearch }: Props) {
