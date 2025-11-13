@@ -2,10 +2,16 @@ import React from "react";
 import * as S from "./Reservation.styles";
 import "../../styles/styleguide.css";
 
-export const Reservation: React.FC = () => {
+interface ReservationProps {
+  onPackageCreate: () => void;
+}
+
+export const Reservation: React.FC<ReservationProps> = ({
+  onPackageCreate,
+}) => {
   return (
-    <S.MainContainer>
-      <S.Login>예약하기</S.Login>
+    <S.MainContainer onClick={onPackageCreate}>
+      <S.Login>패키지 생성하기</S.Login>
     </S.MainContainer>
   );
 };

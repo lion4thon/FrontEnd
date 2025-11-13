@@ -6,6 +6,9 @@ export const Frame = styled.div`
   flex-direction: column;
   gap: 12px;
   position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 export const FrameWrapper = styled.div`

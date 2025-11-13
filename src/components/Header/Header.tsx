@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import H from "./Header.styles.ts";
 import BK from "../../assets/MOV.svg";
 
@@ -7,6 +8,7 @@ import LoginModalBody from "../../components/Account/LoginModal";
 
 export default function Header() {
   const [openLogin, setOpenLogin] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -14,10 +16,10 @@ export default function Header() {
         <H.Inner>
           <H.Logo src={BK} alt="BK Logo" />
           <H.NavMenu>
-            <H.NavItem>패키지</H.NavItem>
-            <H.NavItem>생성</H.NavItem>
+            <H.NavItem>홈</H.NavItem>
+            <H.NavItem onClick={() => navigate("/create")}>패키지 생성</H.NavItem>
             <H.NavItem>패스</H.NavItem>
-            <H.NavItem>마이페이지</H.NavItem>
+            <H.NavItem onClick={() => navigate("/mypage")}>마이페이지</H.NavItem>
           </H.NavMenu>
           <H.UserMenu>
             <H.SignUp>회원가입</H.SignUp>

@@ -44,22 +44,25 @@ const H = {
     width: 100%;
     padding: 0 120px;
     box-sizing: border-box;
+    position: relative;
   `,
 
   // 로고 이미지
   Logo: styled.img`
-    flex: 1;
-    margin-left: 50px;
+    width: 240px;
+    height: auto;
+    flex-shrink: 0;
+    margin-left: 0;
   `,
 
   // 중앙 네비게이션 메뉴
   NavMenu: styled.nav`
     display: flex;
-    flex: 1;
-    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     align-items: center;
     gap: 80px;
-
     white-space: nowrap; /* FIX: 한글이 문자 단위 줄바꿈 되는 현상 방지 */
   `,
 
@@ -95,8 +98,7 @@ const H = {
     font-family: var(--caption-font-family);
     font-size: var(--caption-font-size);
     font-weight: var(--caption-font-weight);
-    color: var(--gray-600);
-    -webkit-text-stroke: 0.25px #ffffff;
+    color: #333333;
     cursor: pointer;
 
     white-space: nowrap; /* FIX */

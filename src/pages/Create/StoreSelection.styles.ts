@@ -12,6 +12,10 @@ export const Frame = styled.div`
   gap: 48px;
   padding: 32px;
   position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 `;
 
 export const Div = styled.div`
@@ -139,8 +143,8 @@ export const PriceDiv = styled.div`
   align-items: center;
   align-self: stretch;
   background-color: var(--gray-100);
-  border: 0.5px solid;
-  border-color: var(--gray-300);
+  border: 2px solid;
+  border-color: #4367ff;
   border-radius: 28px;
   display: flex;
   flex: 0 0 auto;
@@ -148,6 +152,43 @@ export const PriceDiv = styled.div`
   padding: 24px 32px;
   position: relative;
   width: 100%;
+`;
+
+export const PriceValue = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 4px;
+  position: relative;
+  min-width: 0;
+`;
+
+export const PriceNumber = styled.span`
+  height: 36px;
+  color: #1a1a1a;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 36px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: -0.52px;
+`;
+
+export const PriceUnit = styled.span`
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 16px;
+  height: 29px;
+  color: #2c2e35;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: 0.18px;
 `;
 
 export const TextWrapper5 = styled.div`
@@ -584,4 +625,192 @@ export const AddToCartButton = styled.button<{ $isSelected: boolean }>`
   &:hover {
     background: ${(props) => (props.$isSelected ? "#8896ff" : "#3655e6")};
   }
+`;
+
+// 선택된 매장 카드 스타일
+export const SelectedStoreCard = styled.div`
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 16px;
+  position: relative;
+  padding: 16px 24px 16px 16px;
+  background: #f7f8ff;
+  border-radius: 20px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+export const SelectedStoreImage = styled.img`
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+`;
+
+export const SelectedStoreInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  align-self: stretch;
+  flex: 1;
+  gap: 0;
+  position: relative;
+  padding: 8px 0;
+  min-width: 0;
+`;
+
+export const SelectedStoreHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  width: 100%;
+`;
+
+export const SelectedSportTag = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #f7f8ff;
+  border: 1px solid #4367ff;
+  border-radius: 20px;
+  width: fit-content;
+`;
+
+export const SelectedSportTagText = styled.span`
+  height: 27px;
+  color: #4367ff;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: 0.18px;
+`;
+
+export const SelectedStoreNameWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+`;
+
+export const SelectedStoreName = styled.span`
+  height: 27px;
+  color: #1a1a1a;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: 0.18px;
+`;
+
+export const SelectedStoreVerifiedIcon = styled.div`
+  width: 26px;
+  height: 26px;
+  background: url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/bnnYiHEesO.png)
+    no-repeat center;
+  background-size: cover;
+  flex-shrink: 0;
+`;
+
+export const SelectedStoreAddress = styled.div`
+  height: 21px;
+  color: #7d808d;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+`;
+
+export const SelectedStoreDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 16px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+`;
+
+export const SelectedStoreDetailRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 16px;
+  position: relative;
+  flex-wrap: nowrap;
+`;
+
+export const SelectedStoreDescription = styled.span`
+  height: 21px;
+  color: #7d808d;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  text-align: left;
+  white-space: nowrap;
+`;
+
+export const SelectedStorePrice = styled.span`
+  height: 36px;
+  color: #1a1a1a;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 36px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: -0.52px;
+`;
+
+export const SelectedStorePriceUnit = styled.span`
+  height: 29px;
+  color: #2c2e35;
+  font-family: Pretendard, var(--default-font-family);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: 0.18px;
+`;
+
+export const RemoveStoreButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+export const RemoveStoreIcon = styled.div`
+  width: 17.414px;
+  height: 17.414px;
+  background: url(https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/9LqLC6Gihr.png)
+    no-repeat center;
+  background-size: cover;
 `;
