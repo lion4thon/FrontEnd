@@ -7,6 +7,11 @@ import {
   type SurveyKey,
 } from "./survey.state";
 
+import {
+  getAiRecommendations,
+  type AiRecommendationRequest,
+} from "./apis/aiRecommendations";
+
 import { QUESTIONS, PAGE_GROUPS } from "./survey.schema";
 import { QuestionRenderer } from "./QuestionRenderer";
 import LeftIcon from "../../../assets/chevron-left.svg";
@@ -106,12 +111,38 @@ export default function SurveyPage() {
     }
   };
 
-  const submit = async () => {
+//   const submit = async () => {
+//   const interestIds = (state.interest ?? [])
+//     .map((v) => Number(v))
+//     .filter((n) => !Number.isNaN(n)); // NaN 제거
+
+//   const payload = {
+//     purpose: state.goal ?? "",
+//     preferredTime: state.time ?? "",
+//     price: 50000,
+//     preferredIntensity: state.intensity ?? "",
+//     recoveryCondition: state.recovery ?? "",
+//     preferredEnvironment: state.env ?? "",
+//     timeRange: state.moveTime ?? "",
+//     avoidFactors: state.risk ?? [],
+//     interestedSportIds: interestIds,  // 여기로 교체
+//   };
+
+//   console.log("SUBMIT payload", payload);
+//   console.log("POST URL", api.defaults.baseURL, "/api/survey");
+
+//   const res = await api.post("/api/survey", payload);
+//   return res.data;
+// };
+
+const submit = async () => {
+  // 1) 관심 운동 종목 id 리스트
   const interestIds = (state.interest ?? [])
     .map((v) => Number(v))
-    .filter((n) => !Number.isNaN(n)); // NaN 제거
+    .filter((n) => !Number.isNaN(n));
 
-  const payload = {
+  // 2) 설문 저장용 payload (/api/survey)
+  const surveyPayload = {
     purpose: state.goal ?? "",
     preferredTime: state.time ?? "",
     price: 50000,
@@ -120,14 +151,35 @@ export default function SurveyPage() {
     preferredEnvironment: state.env ?? "",
     timeRange: state.moveTime ?? "",
     avoidFactors: state.risk ?? [],
-    interestedSportIds: interestIds,  // 여기로 교체
+    interestedSportIds: interestIds,
   };
 
-  console.log("SUBMIT payload", payload);
-  console.log("POST URL", api.defaults.baseURL, "/api/survey");
+  console.log("[SURVEY PAYLOAD]", surveyPayload);
+  console.log("[SURVEY URL]", api.defaults.baseURL, "/api/survey");
 
-  const res = await api.post("/api/survey", payload);
-  return res.data;
+  // 설문 내용 저장
+  await api.post("/api/survey", surveyPayload);
+
+  // 3) AI 추천용 payload (/api/ai/recommendations)
+  const aiPayload: AiRecommendationRequest = {
+    purpose: surveyPayload.purpose,
+    preferred_time: surveyPayload.preferredTime,
+    preferred_intensity: surveyPayload.preferredIntensity,
+    travel_time: surveyPayload.timeRange,
+    environment: surveyPayload.preferredEnvironment,
+    preferred_sports: (state.interest ?? []).map(String),
+    recovery_level: surveyPayload.recoveryCondition,
+    budget_range: String(surveyPayload.price),
+    avoid_factors: surveyPayload.avoidFactors,
+  };
+
+  console.log("[AI PAYLOAD]", aiPayload);
+  console.log("[AI URL]", api.defaults.baseURL, "/api/ai/recommendations");
+
+  // AI 추천 패키지 조회
+  const aiResult = await getAiRecommendations(aiPayload);
+  console.log("[AI RESULT]", aiResult);
+  return aiResult; 
 };
 
   // 값 유무에 따라 저장하든 버리든
@@ -196,22 +248,43 @@ export default function SurveyPage() {
     cancelExit();
   };
 
+  // const onConfirmComplete = async () => {
+  //   try {
+  //     await submit();
+  //     // data.surveyId 등이 있을 경우, 필요 시 아래 navigate에 쿼리로 넘길 수 있음
+  //     setDirty(false);
+  //     setOpenComplete(false);
+  //     // ------------------------------------------------------------------
+  //     //  api 설계 끝나면 나중에 수정해야함 !!!!
+  //     navigate("/package");
+  //     // ------------------------------------------------------------------
+  //   } catch (e) {
+  //     console.error("설문 제출 실패", e);
+  //     // TODO: 에러 토스트/모달로 교체 가능
+  //     alert("설문 제출 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+  //   }
+  // };
+
   const onConfirmComplete = async () => {
-    try {
-      await submit();
-      // data.surveyId 등이 있을 경우, 필요 시 아래 navigate에 쿼리로 넘길 수 있음
-      setDirty(false);
-      setOpenComplete(false);
-      // ------------------------------------------------------------------
-      //  api 설계 끝나면 나중에 수정해야함 !!!!
-      navigate("/package");
-      // ------------------------------------------------------------------
-    } catch (e) {
-      console.error("설문 제출 실패", e);
-      // TODO: 에러 토스트/모달로 교체 가능
-      alert("설문 제출 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
-    }
-  };
+  try {
+    // 설문 저장 + AI 추천까지 한 번에
+    const aiResult = await submit();
+
+    setDirty(false);
+    setOpenComplete(false);
+
+    // 필요하다면 추천 리스트를 /package로 같이 넘겨주기
+    navigate("/package", {
+      state: {
+        aiRecommendations: aiResult.recommendations,
+        aiTotalCount: aiResult.total_count,
+      },
+    });
+  } catch (e) {
+    console.error("설문 제출 실패", e);
+    alert("설문 제출 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+  }
+};
 
   return (
     <S.Page>

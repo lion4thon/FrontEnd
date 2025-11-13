@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentProps } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { fetchPasses } from "./api/passes";
 import type { PassItem } from "./types/pass";
@@ -168,6 +168,9 @@ export default function PackagePage() {
 
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [openSurvey, setOpenSurvey] = useState<boolean>(false);
+
+  const location = useLocation();
+  const aiRecommendations = location.state?.aiRecommendations ?? [];
 
   // 정렬 변경 시 정책 분기 (AI 추천순 클릭 → 로그인/설문 체크)
   const handleSortChange = (v: Sort) => {
