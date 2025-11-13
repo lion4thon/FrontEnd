@@ -8,16 +8,16 @@ import rightChevron from "../../assets/chevron-right-dg.svg";
 import reservedrop from "../../assets/chevron-down-b.svg";
 
 /** "그룹 (4인)  1타임 (60분)" -> ["그룹 (4인)", "1타임 (60분)"] */
-function splitTypeLabel(typeLabel: string): [string, string] {
-  const normalized = typeLabel.replace(/\s{2,}/g, " ").trim();
-  const groupMatch = normalized.match(/그룹\s*\([^)]+\)|\d+\s*인/);
-  const timeMatch = normalized.match(
-    /\d+\s*타임\s*\([^)]+\)|1일권|타임\s*\([^)]+\)/
-  );
-  const group = groupMatch ? groupMatch[0] : "";
-  const time = timeMatch ? timeMatch[0] : normalized.replace(group, "").trim();
-  return [group, time];
-}
+// function splitTypeLabel(typeLabel: string): [string, string] {
+//   const normalized = typeLabel.replace(/\s{2,}/g, " ").trim();
+//   const groupMatch = normalized.match(/그룹\s*\([^)]+\)|\d+\s*인/);
+//   const timeMatch = normalized.match(
+//     /\d+\s*타임\s*\([^)]+\)|1일권|타임\s*\([^)]+\)/
+//   );
+//   const group = groupMatch ? groupMatch[0] : "";
+//   const time = timeMatch ? timeMatch[0] : normalized.replace(group, "").trim();
+//   return [group, time];
+// }
 
 /** YYYY. MM. DD(요일) HH:mm 형식 */
 function formatKRDate(date: Date, timeLabel?: string) {
