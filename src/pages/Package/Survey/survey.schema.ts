@@ -13,7 +13,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "체력 증진",
       "스트레스 해소",
       "취미 탐색",
-      "기타",
     ],
   },
 
@@ -29,7 +28,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "오후(12시~18시)",
       "저녁(18시~23시)",
       "심야(23시~05시)",
-      "기타",
     ],
   },
 
@@ -44,7 +42,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "살짝 땀이 나는 정도",
       "땀이 흐를 정도의 중강도",
       "끝나면 기진맥진 고강도",
-      "기타",
     ],
   },
 
@@ -81,7 +78,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "크로스핏",
       "F45",
       "파워리프팅",
-      "직접입력",
     ],
   },
 
@@ -91,7 +87,7 @@ export const QUESTIONS: QuestionSchema[] = [
     required: true,
     title: "운동 후 회복 정도는 어떠신가요?",
     subtitle: "단일 선택만 가능해요.",
-    options: ["매우 지침/피로함", "평범함", "높음/컨디션 양호", "직접입력"],
+    options: ["매우 지침/피로함", "평범함", "높음/컨디션 양호"],
   },
 
   {
@@ -106,7 +102,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "오후(12시~18시)",
       "저녁(18시~23시)",
       "심야(23시~05시)",
-      "기타",
     ],
   },
 
@@ -121,7 +116,6 @@ export const QUESTIONS: QuestionSchema[] = [
       "살짝 땀이 나는 정도",
       "땀이 흐를 정도의 중강도",
       "끝나면 기진맥진 고강도",
-      "기타",
     ],
   },
 ];

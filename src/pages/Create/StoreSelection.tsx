@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import {  useLocation } from "react-router-dom";
 import * as S from "./StoreSelection.styles";
 import { DivWrapper } from "./StoreSelection/DivWrapper";
 import "../../styles/styleguide.css";
@@ -10,6 +11,9 @@ import { convertApiStoreToStore, type Store } from "../../utils/storeConverter";
 // 임시 종목 데이터 (나중에 API로 대체)
 const SPORTS = ["필라테스", "요가", "헬스 트레이닝"];
 
+const STORAGE_KEY_SPORTS = "mov-create-selectedSports";
+const STORAGE_KEY_STORES = "mov-create-selectedStores";
+
 interface StoreSelectionProps {
   onStoresChange?: (stores: (Store | null)[]) => void;
 }
@@ -17,24 +21,45 @@ interface StoreSelectionProps {
 export const StoreSelection: React.FC<StoreSelectionProps> = ({
   onStoresChange,
 }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const [openDropdowns, setOpenDropdowns] = useState<boolean[]>([
     false,
     false,
     false,
   ]);
-  const [selectedSports, setSelectedSports] = useState<string[]>(["", "", ""]);
+  const [selectedSports, setSelectedSports] = useState<string[]>(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem(STORAGE_KEY_SPORTS);
+        if (saved) {
+          const parsed = JSON.parse(saved) as string[];
+          return [parsed[0] || "", parsed[1] || "", parsed[2] || ""];
+        }
+      }
+    } catch (e) {
+      console.error("선택된 종목 불러오기 실패:", e);
+    }
+    return ["", "", ""];
+  });
   const [openStoreDropdowns, setOpenStoreDropdowns] = useState<boolean[]>([
     false,
     false,
     false,
   ]);
-  const [selectedStores, setSelectedStores] = useState<(Store | null)[]>([
-    null,
-    null,
-    null,
-  ]);
+  const [selectedStores, setSelectedStores] = useState<(Store | null)[]>(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem(STORAGE_KEY_STORES);
+        if (saved) {
+          const parsed = JSON.parse(saved) as (Store | null)[];
+          return [parsed[0] ?? null, parsed[1] ?? null, parsed[2] ?? null];
+        }
+      }
+    } catch (e) {
+      console.error("선택된 매장 불러오기 실패:", e);
+    }
+    return [null, null, null];
+  });
   // 각 종목별 매장 목록 (인덱스는 selectedSports와 동일)
   const [storesBySport, setStoresBySport] = useState<Store[][]>([[], [], []]);
   // 각 종목별 로딩 상태
@@ -51,6 +76,8 @@ export const StoreSelection: React.FC<StoreSelectionProps> = ({
   ]);
   const dropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
   const storeDropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // const lastHandledAddedStoreIdRef = useRef<number | null>(null);
+const lastHandledAddedStoreIdRef = useRef<string | null>(null);
 
   // StoreInformation에서 돌아올 때 추가된 매장 정보 처리
   useEffect(() => {
@@ -59,45 +86,68 @@ export const StoreSelection: React.FC<StoreSelectionProps> = ({
       sport?: string;
     } | null;
 
-    if (locationState?.addedStore && locationState?.sport) {
-      // 빈 슬롯 찾기
-      setSelectedSports((prev) => {
-        const emptyIndex = prev.findIndex((sport) => sport === "");
-        if (emptyIndex !== -1) {
-          // 첫 번째 빈 슬롯에 추가
-          const newSports = [...prev];
-          newSports[emptyIndex] = locationState.sport!;
-          return newSports;
-        } else {
-          // 빈 슬롯이 없으면 첫 번째 슬롯에 추가
-          const newSports = [...prev];
-          newSports[0] = locationState.sport!;
-          return newSports;
-        }
-      });
-
-      setSelectedStores((prev) => {
-        const emptyIndex = prev.findIndex((store) => store === null);
-        let newStores: (Store | null)[];
-        if (emptyIndex !== -1) {
-          // 첫 번째 빈 슬롯에 추가
-          newStores = [...prev];
-          newStores[emptyIndex] = locationState.addedStore!;
-        } else {
-          // 빈 슬롯이 없으면 첫 번째 슬롯에 추가
-          newStores = [...prev];
-          newStores[0] = locationState.addedStore!;
-        }
-        // 상위 컴포넌트에 변경사항 알리기
-        onStoresChange?.(newStores);
-        return newStores;
-      });
-
-      // location.state 초기화 (뒤로가기 시 중복 추가 방지)
-      window.history.replaceState({}, document.title);
+    if (!locationState?.addedStore || !locationState?.sport) {
+      return;
     }
+
+    const addedStore = locationState.addedStore;
+    const sport = locationState.sport;
+
+    // 같은 addedStore를 두 번 처리하지 않도록 가드
+    if (lastHandledAddedStoreIdRef.current === addedStore.id) {
+      return;
+    }
+    lastHandledAddedStoreIdRef.current = addedStore.id;
+
+    // 빈 슬롯 찾기 + 종목 채우기
+    setSelectedSports((prev) => {
+      const emptyIndex = prev.findIndex((s) => s === "");
+      const next = [...prev];
+      if (emptyIndex !== -1) {
+        next[emptyIndex] = sport;
+      } else {
+        next[0] = sport;
+      }
+      return next;
+    });
+
+    setSelectedStores((prev) => {
+      // 이미 같은 매장이 있으면 그대로 반환
+      const exists = prev.some((s) => s && s.id === addedStore.id);
+      if (exists) return prev;
+
+      const emptyIndex = prev.findIndex((store) => store === null);
+      const next: (Store | null)[] = [...prev];
+      if (emptyIndex !== -1) {
+        next[emptyIndex] = addedStore;
+      } else {
+        next[0] = addedStore;
+      }
+      onStoresChange?.(next);
+      return next;
+    });
+
+    // 뒤로가기 시에도 같은 location.state가 다시 처리되는 것을 방지하고 싶다면
+    // history state를 비워줄 수도 있음
+    window.history.replaceState({}, document.title);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
+
+  // 선택된 종목/매장 상태를 localStorage와 부모에 동기화
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY_SPORTS, JSON.stringify(selectedSports));
+        localStorage.setItem(STORAGE_KEY_STORES, JSON.stringify(selectedStores));
+      }
+    } catch (e) {
+      console.error("패키지 선택 상태 저장 실패:", e);
+    }
+
+    // 부모 컴포넌트에도 현재 선택 상태 전달
+    onStoresChange?.(selectedStores);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSports, selectedStores]);
 
   // 패키지 가격 계산
   const calculateTotalPrice = () => {
@@ -233,37 +283,30 @@ export const StoreSelection: React.FC<StoreSelectionProps> = ({
     const newOpenStoreDropdowns = [...openStoreDropdowns];
     newOpenStoreDropdowns[index] = false;
     setOpenStoreDropdowns(newOpenStoreDropdowns);
-
-    // 매장 상세 정보 페이지로 이동
-    navigate(`/create/store/${store.id}`, {
-      state: { store, sport: selectedSports[index] },
-    });
   };
+
 
   // 검색으로 매장 선택 시 처리
-  const handleSearchStoreSelect = (store: Store) => {
-    // 빈 슬롯 찾기
-    const emptyIndex = selectedStores.findIndex((s) => s === null);
+const handleSearchStoreSelect = (store: Store) => {
+  // 빈 슬롯 찾기
+  const emptyIndex = selectedStores.findIndex((s) => s === null);
+  const targetIndex = emptyIndex !== -1 ? emptyIndex : 0;
 
-    let newSelectedStores: (Store | null)[];
-    if (emptyIndex !== -1) {
-      // 빈 슬롯이 있으면 해당 슬롯에 매장 추가
-      newSelectedStores = [...selectedStores];
-      newSelectedStores[emptyIndex] = store;
-    } else {
-      // 빈 슬롯이 없으면 첫 번째 슬롯에 추가 (기존 매장 대체)
-      newSelectedStores = [...selectedStores];
-      newSelectedStores[0] = store;
-    }
-    setSelectedStores(newSelectedStores);
-    // 상위 컴포넌트에 변경사항 알리기
-    onStoresChange?.(newSelectedStores);
+  // 1) 매장 넣기
+  const newSelectedStores = [...selectedStores];
+  newSelectedStores[targetIndex] = store;
+  setSelectedStores(newSelectedStores);
 
-    // 매장 상세 정보 페이지로 이동 (종목 정보는 선택사항)
-    navigate(`/create/store/${store.id}`, {
-      state: { store },
-    });
-  };
+  // 2) 종목 라벨도 같이 넣기 (store에 종목 정보가 없으면 임시 문구 사용)
+  const newSelectedSports = [...selectedSports];
+  newSelectedSports[targetIndex] =
+    // store.sport 같은 필드가 있으면 그걸 쓰시고요
+    (store as any).sport || "직접 선택한 매장";
+  setSelectedSports(newSelectedSports);
+
+  // 3) 상위 컴포넌트에 알리기
+  onStoresChange?.(newSelectedStores);
+};
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -448,9 +491,10 @@ export const StoreSelection: React.FC<StoreSelectionProps> = ({
                                           {store.price}
                                         </S.StorePrice>
                                         <S.AddToCartButton
-                                          onClick={() =>
-                                            addStoreToCart(index, store)
-                                          }
+                                          onClick={(e) => {
+                                            e.stopPropagation(); 
+                                            addStoreToCart(index, store);
+                                          }}
                                           $isSelected={
                                             selectedStores[index]?.id ===
                                             store.id

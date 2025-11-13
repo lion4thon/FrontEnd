@@ -19,7 +19,7 @@ const H = {
       )
       1;
     padding: 0;
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;

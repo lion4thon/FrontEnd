@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as S from "./DivWrapper.styles";
 import searchIcon from "../../../assets/gg_search.png";
-import { getStoresBySearch } from "../../../utils/api";
+// import { getStoresBySearch } from "../../../utils/api";
+import { searchFacilities } from "../apis/facility";
 import { convertApiStoreToStore, type Store } from "../../../utils/storeConverter";
+import { useNavigate } from "react-router-dom";
 
 interface DivWrapperProps {
   className?: string;
@@ -22,6 +24,8 @@ export const DivWrapper: React.FC<DivWrapperProps> = ({
   const [error, setError] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const navigate = useNavigate();
 
   // 검색어에 따라 API 호출하여 매장 조회
   useEffect(() => {
@@ -43,7 +47,8 @@ export const DivWrapper: React.FC<DivWrapperProps> = ({
       setError(null);
 
       try {
-        const response = await getStoresBySearch(searchValue.trim());
+        // const response = await getStoresBySearch(searchValue.trim());
+                const response = await searchFacilities(searchValue.trim());
         if (response.isSuccess && response.data) {
           const stores = response.data.content.map(convertApiStoreToStore);
           setFilteredStores(stores);
@@ -149,12 +154,15 @@ export const DivWrapper: React.FC<DivWrapperProps> = ({
           ) : filteredStores.length > 0 ? (
             <S.SearchResultList>
               {filteredStores.map((store) => (
-                <S.SearchStoreCard key={store.id}>
+                <S.SearchStoreCard
+                  key={store.id}
+                  
+                >
                   <S.SearchStoreImage src={store.image} alt={store.name} />
                   <S.SearchStoreInfo>
-                    <S.SearchStoreHeader>
+                    <S.SearchStoreHeader >
                       <S.SearchStoreNameWrapper>
-                        <S.SearchStoreName>{store.name}</S.SearchStoreName>
+                        <S.SearchStoreName onClick={() => navigate(`/create/store/${store.id}`)}>{store.name}</S.SearchStoreName>
                         <S.SearchStoreVerifiedIcon />
                       </S.SearchStoreNameWrapper>
                       <S.SearchStoreAddress>{store.address}</S.SearchStoreAddress>

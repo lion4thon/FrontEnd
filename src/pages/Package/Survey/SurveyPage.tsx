@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { api } from "../../../lib/api";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useSurveyState,
@@ -105,10 +106,29 @@ export default function SurveyPage() {
     }
   };
 
-  const submit = () => {
-    console.log("SUBMIT", state);
-    // TODO: 제출 API 연결 시 이곳에서 호출
+  const submit = async () => {
+  const interestIds = (state.interest ?? [])
+    .map((v) => Number(v))
+    .filter((n) => !Number.isNaN(n)); // NaN 제거
+
+  const payload = {
+    purpose: state.goal ?? "",
+    preferredTime: state.time ?? "",
+    price: 50000,
+    preferredIntensity: state.intensity ?? "",
+    recoveryCondition: state.recovery ?? "",
+    preferredEnvironment: state.env ?? "",
+    timeRange: state.moveTime ?? "",
+    avoidFactors: state.risk ?? [],
+    interestedSportIds: interestIds,  // 여기로 교체
   };
+
+  console.log("SUBMIT payload", payload);
+  console.log("POST URL", api.defaults.baseURL, "/api/survey");
+
+  const res = await api.post("/api/survey", payload);
+  return res.data;
+};
 
   // 값 유무에 따라 저장하든 버리든
   const setFor =
@@ -176,11 +196,21 @@ export default function SurveyPage() {
     cancelExit();
   };
 
-  const onConfirmComplete = () => {
-    submit();
-    setDirty(false);
-    setOpenComplete(false);
-    navigate("/package/survey/done"); // 완료 페이지로 이동
+  const onConfirmComplete = async () => {
+    try {
+      await submit();
+      // data.surveyId 등이 있을 경우, 필요 시 아래 navigate에 쿼리로 넘길 수 있음
+      setDirty(false);
+      setOpenComplete(false);
+      // ------------------------------------------------------------------
+      //  api 설계 끝나면 나중에 수정해야함 !!!!
+      navigate("/package");
+      // ------------------------------------------------------------------
+    } catch (e) {
+      console.error("설문 제출 실패", e);
+      // TODO: 에러 토스트/모달로 교체 가능
+      alert("설문 제출 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   return (

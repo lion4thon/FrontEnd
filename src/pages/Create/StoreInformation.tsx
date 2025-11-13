@@ -7,8 +7,9 @@ import React, {
 } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import * as S from "./StoreInformation.styles";
-import Header from "../../components/Header/Header";
-import { getFacilityDetail, getFacilityReviews } from "../../utils/api";
+// import Header from "../../components/Header/Header";
+// import { getFacilityDetail, getFacilityReviews } from "../../utils/api";
+import { getFacilityDetail, getFacilityReviews } from "./apis/facility";
 import { ApiError } from "../../utils/api";
 
 // 매장 정보 데이터 타입 (API에서 받아올 데이터)
@@ -110,9 +111,9 @@ export const StoreInformation: React.FC = () => {
 
           // businessHours를 weekdayHours, weekendHours, holidayClosedInfo를 합쳐서 구성
           const businessHours = [
-            `평일: ${apiData.weekdayHours}`,
-            `주말: ${apiData.weekendHours}`,
-            apiData.holidayClosedInfo,
+            apiData.weekdayHours ? `평일: ${apiData.weekdayHours}` : "",
+          apiData.weekendHours ? `주말: ${apiData.weekendHours}` : "",
+          apiData.holidayClosedInfo ?? ""
           ]
             .filter(Boolean)
             .join("\n");
@@ -205,12 +206,11 @@ export const StoreInformation: React.FC = () => {
         const sortParam =
           sortOrder === "latest" ? "createdAt,desc" : "createdAt,desc"; // 추천순은 나중에 API에서 지원하면 변경
 
-        const response = await getFacilityReviews(
-          facilityId,
-          page,
-          5,
-          sortParam
-        );
+        const response = await getFacilityReviews(facilityId, {
+          page,        // page: page
+          size: 5,     // 한 페이지에 5개
+          sort: sortParam,
+        });
 
         if (response.isSuccess && response.data) {
           const apiReviews = response.data.content;
@@ -368,14 +368,18 @@ export const StoreInformation: React.FC = () => {
   };
 
   // 주소 설명을 줄바꿈 처리
-  const formatAddressDescription = (text: string) => {
-    return text.split("\n").map((line, index) => (
-      <React.Fragment key={index}>
-        {line}
-        {index < text.split("\n").length - 1 && <br />}
-      </React.Fragment>
-    ));
-  };
+const formatAddressDescription = (text?: string | null) => {
+  if (!text) return null;
+
+  const lines = text.split("\n");
+
+  return lines.map((line, index) => (
+    <React.Fragment key={index}>
+      {line}
+      {index < lines.length - 1 && <br />}
+    </React.Fragment>
+  ));
+};
 
   // 이미지 캐러셀 스크롤 함수
   const scrollImages = (direction: "left" | "right") => {
@@ -512,7 +516,7 @@ export const StoreInformation: React.FC = () => {
   if (isLoading) {
     return (
       <>
-        <Header />
+        {/* <Header /> */}
         <S.Container>
           <S.ContentWrapper>
             <div>로딩 중...</div>
@@ -529,7 +533,7 @@ export const StoreInformation: React.FC = () => {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <S.Container>
         <S.ContentWrapper>
           {/* 좌측: 매장 정보 섹션 */}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "./Create.styles";
 import { Description } from "./Description";
 import { StoreSelection } from "./StoreSelection";
@@ -6,9 +7,10 @@ import { ProfileSettings } from "./ProfileSettings";
 import { Reservation } from "./Reservation";
 import { AI } from "./AI";
 import { Complete } from "./Complete";
-import Header from "../../components/Header/Header";
-import { createPass } from "../../utils/api";
+// import Header from "../../components/Header/Header";
 import { ApiError } from "../../utils/api";
+import { createPass } from "./apis/pass";
+import type { CreatePassRequest } from "./apis/pass";
 import type { Store } from "../../utils/storeConverter";
 
 export const Create: React.FC = () => {
@@ -21,6 +23,7 @@ export const Create: React.FC = () => {
   ]);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const navigate = useNavigate();
 
   const handlePackageCreate = () => {
     // 최소 1개 매장이 선택되어 있는지 확인
@@ -55,7 +58,9 @@ export const Create: React.FC = () => {
     try {
       setIsCreating(true);
 
-      const facilityIdList = getSelectedStoreIds();
+      const facilityIds = getSelectedStoreIds();
+      // 같은 매장이 여러 슬롯에 들어가 있어도 한 번만 보내도록 중복 제거
+      const facilityIdList = Array.from(new Set(facilityIds));
       const passPrice = calculateTotalPrice();
 
       if (facilityIdList.length === 0) {
@@ -64,11 +69,15 @@ export const Create: React.FC = () => {
         return;
       }
 
-      const request = {
+      console.log("[DEBUG] 선택된 매장 ID들:", facilityIds);
+      console.log("[DEBUG] 중복 제거 후 ID들:", facilityIdList);
+
+      const request: CreatePassRequest = {
         facilityIdList,
         passPrice,
         passName: packageName.trim() || "패키지",
         passDescription: packageDescription.trim() || "",
+        storageType: "CART",
       };
 
       const response = await createPass(request);
@@ -77,8 +86,7 @@ export const Create: React.FC = () => {
         console.log("패키지 생성 성공:", response.message);
         // 성공 시 모달 닫기
         setIsCompleteModalOpen(false);
-        // TODO: 성공 시 처리 (예: 장바구니 페이지로 이동)
-        alert("패키지가 장바구니에 추가되었습니다.");
+        navigate("/cart");
       } else {
         throw new Error(response.message || "패키지 생성에 실패했습니다.");
       }
@@ -109,11 +117,12 @@ export const Create: React.FC = () => {
         return;
       }
 
-      const request = {
+      const request: CreatePassRequest = {
         facilityIdList,
         passPrice,
         passName: packageName.trim() || "패키지",
         passDescription: packageDescription.trim() || "",
+        storageType: "LOCKER",
       };
 
       const response = await createPass(request);
@@ -143,9 +152,10 @@ export const Create: React.FC = () => {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <S.Container>
         <Description />
+        {/* <StoreSelection onStoresChange={setSelectedStores} /> */}
         <StoreSelection onStoresChange={setSelectedStores} />
         <ProfileSettings
           packageName={packageName}
