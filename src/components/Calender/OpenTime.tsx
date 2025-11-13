@@ -37,7 +37,7 @@ export default function TimeSlotGrid({
   );
 }
 
-// 스타일
+// 스타일 수정
 const Wrap = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
