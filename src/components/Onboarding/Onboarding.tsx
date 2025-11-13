@@ -3,6 +3,7 @@ import * as S from "./Onboarding.styles";
 import "../../styles/styleguide.css";
 import vector64 from "../../assets/vector-64.png";
 import frame122 from "../../assets/Frame-122.png";
+import Header from "../Header/Header";
 import { useNavigate } from "react-router-dom";
 
 const Onboarding: React.FC = () => {
