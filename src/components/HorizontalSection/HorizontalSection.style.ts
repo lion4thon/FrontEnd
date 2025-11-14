@@ -72,6 +72,9 @@ export const NavBtn = styled.button`
   cursor: pointer;
   z-index: 6;
   transition: opacity 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &[data-disabled="true"] {
     opacity: 0.35;
@@ -83,9 +86,11 @@ export const NavBtn = styled.button`
 `;
 
 export const PrevBtn = styled(NavBtn)`
-  left: 12px;
+  /* left: 12px; */
+  left: -183px;
 `;
 
 export const NextBtn = styled(NavBtn)`
-  right: 12px;
+  /* right: 12px; */
+  right: -183px;
 `;
