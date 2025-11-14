@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentProps } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { fetchPasses } from "./api/passes";
 import type { PassItem } from "./types/pass";
@@ -21,8 +21,12 @@ import type { PriceRange, Sort } from "../../components/FilterBar/FilterBar.type
 
 type PackageItem = ComponentProps<typeof PackageCard>["item"];
 
-function inferTagsFromPassName(name: string): string[] {
+function inferTagsFromPassName(name?: string): string[] {
   const tags: string[] = [];
+  if (!name) {
+    tags.push("지구력");
+    return tags;
+  }
   if (name.includes("웨이트") || name.includes("PT") || name.includes("헬스")) {
     tags.push("근력");
   }
@@ -58,8 +62,30 @@ function mapPassToPackage(p: PassItem): PackageItem {
     title: p.passName,
     detail: p.passDescription,
     pricePerClass: p.passPrice,
-    thumbnail: "/default-thumbnail.png",
+    // 서버에서 내려주는 이미지 URL 사용, 없으면 기본 썸네일
+    thumbnail: p.imageUrl || "/default-thumbnail.png",
     tags: inferTagsFromPassName(p.passName),
+    totalSessions: 10,
+  };
+}
+
+type AiRecommendationItem = {
+  name: string;
+  price: number;
+  pass_id: number;
+  intensity: string;
+  purposeTag: string;
+  predicted_score: number;
+};
+
+function mapAiRecommendationToPackage(rec: AiRecommendationItem): PackageItem {
+  return {
+    id: rec.pass_id,
+    title: rec.name,
+    detail: "",
+    pricePerClass: rec.price,
+    thumbnail: "/default-thumbnail.png",
+    tags: inferTagsFromPassName(rec.name),
     totalSessions: 10,
   };
 }
@@ -81,82 +107,6 @@ function getPriceRange(price: PriceRange) {
   }
 }
 
-// 하드코딩 패키지 데이터
-// const mockPackages: PackageItem[] = [
-//   {
-//     id: 1,
-//     title: "헬린이를 위한 입문 운동 패키지",
-//     thumbnail: fitness1,
-//     tags: ["근력", "지구력"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 43000,
-//     totalSessions: 12,
-//   },
-//   {
-//     id: 2,
-//     title: "요가로 시작하는 하루 루틴",
-//     thumbnail: fitness1,
-//     tags: ["유연성", "이완"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 35000,
-//     totalSessions: 10,
-//   },
-//   {
-//     id: 3,
-//     title: "PT 전문가의 코어 집중 클래스",
-//     thumbnail: fitness1,
-//     tags: ["코어", "지구력"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 50000,
-//     totalSessions: 8,
-//   },
-//   {
-//     id: 4,
-//     title: "클라이밍 초급자를 위한 근력 강화",
-//     thumbnail: fitness1,
-//     tags: ["근력", "밸런스"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 42000,
-//     totalSessions: 10,
-//   },
-//   {
-//     id: 5,
-//     title: "야외 러닝 입문자를 위한 기초 체력 코스",
-//     thumbnail: fitness1,
-//     tags: ["유산소", "지구력"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 30000,
-//     totalSessions: 8,
-//   },
-//   {
-//     id: 6,
-//     title: "헬린이를 위한 입문 운동 패키지",
-//     thumbnail: fitness1,
-//     tags: ["근력", "지구력"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 43000,
-//     totalSessions: 12,
-//   },
-//   {
-//     id: 7,
-//     title: "헬린이를 위한 입문 운동 패키지",
-//     thumbnail: fitness1,
-//     tags: ["근력", "지구력"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 43000,
-//     totalSessions: 12,
-//   },
-//   {
-//     id: 8,
-//     title: "헬린이를 위한 입문 운동 패키지",
-//     thumbnail: fitness1,
-//     tags: ["근력", "유연성"],
-//     detail: "기초체력과 근력 강화에 안성맞춤",
-//     pricePerClass: 43000,
-//     totalSessions: 12,
-//   },
-// ];
-
 export default function PackagePage() {
   const [query, setQuery] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -169,16 +119,24 @@ export default function PackagePage() {
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [openSurvey, setOpenSurvey] = useState<boolean>(false);
 
+  const location = useLocation();
+  const aiRecommendations = location.state?.aiRecommendations ?? [];
+  const hasAiRecommendations = aiRecommendations && aiRecommendations.length > 0;
+
   // 정렬 변경 시 정책 분기 (AI 추천순 클릭 → 로그인/설문 체크)
   const handleSortChange = (v: Sort) => {
     if (v === "AI 추천순") {
-      if (!isLoggedIn) {
-        setOpenLogin(true);
-        return;
-      }
-      if (!surveyCompleted) {
-        setOpenSurvey(true);
-        return;
+      // 이미 AI 추천 결과가 있으면 바로 정렬만 변경
+      if (!hasAiRecommendations) {
+        // 결과가 없을 때만 로그인/설문 체크
+        if (!isLoggedIn) {
+          setOpenLogin(true);
+          return;
+        }
+        if (!surveyCompleted) {
+          setOpenSurvey(true);
+          return;
+        }
       }
     }
     setSort(v);
@@ -190,7 +148,7 @@ export default function PackagePage() {
   };
   const handleGoSurvey = () => {
     setOpenSurvey(false);
-    nav("/survey/start"); // 설문 시작 모달로 이동
+    nav("/package/survey"); // 설문 시작 모달로 이동
   };
 
   const toggleTag = (tag: string) => {
@@ -279,6 +237,12 @@ export default function PackagePage() {
     load();
   }, [query, sort, price]);
 
+  useEffect(() => {
+    if (hasAiRecommendations) {
+      setSort("AI 추천순");
+    }
+  }, [hasAiRecommendations]);
+
   return (
     <>
       <S.Page>
@@ -307,6 +271,13 @@ export default function PackagePage() {
           <S.Spacer />
         </S.Content>
 
+        {hasAiRecommendations && sort === "AI 추천순" && (
+          <HorizontalSection
+            title="✨ AI 추천 패키지"
+            items={aiRecommendations.map(mapAiRecommendationToPackage)}
+            keyPrefix="ai-"
+          />
+        )}
         <HorizontalSection title="💪 헬린이를 위한 가벼운 헬스 패키지" items={sectionGym} keyPrefix="gym-" />
         <HorizontalSection title="🧘‍♀️ 요가 · 필라테스 추천 패키지" items={sectionYoga} keyPrefix="yoga-" />
         <HorizontalSection title="🏃‍♀️ 활동적인 러닝/클라이밍 패키지" items={sectionActive} keyPrefix="active-" />

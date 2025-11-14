@@ -20,11 +20,11 @@ export default function Header() {
     <>
       <H.Container>
         <H.Inner>
-          <H.Logo src={BK} alt="MOV Logo" />
+          <H.Logo onClick={() => navigate("/package")} src={BK} alt="MOV Logo" />
           <H.NavMenu>
-            <H.NavItem>홈</H.NavItem>
+            <H.NavItem onClick={() => navigate("/package")}>홈</H.NavItem>
             <H.NavItem onClick={() => navigate("/create")}>패키지 생성</H.NavItem>
-            <H.NavItem>패스</H.NavItem>
+            <H.NavItem onClick={() => navigate("/cart")}>장바구니</H.NavItem>
             <H.NavItem onClick={() => navigate("/mypage")}>마이페이지</H.NavItem>
           </H.NavMenu>
 
@@ -51,7 +51,7 @@ export default function Header() {
       <Dialog open={openLogin} onClose={handleCloseLogin}>
         <LoginModalBody
           onClose={handleCloseLogin}
-          onSuccess={handleCloseLogin} // 로그인 성공 -> 상태는 refresh()에서 갱신, 모달만 닫기
+          onSuccess={handleCloseLogin}
         />
       </Dialog>
     </>

@@ -245,7 +245,6 @@ export const DetailText = styled.span`
   line-height: 27px;
   text-align: left;
   white-space: nowrap;
-  letter-spacing: 0.18px;
 `;
 
 export const DetailContent = styled.div`
@@ -322,6 +321,7 @@ export const BusinessHours = styled.span`
   text-align: left;
   white-space: nowrap;
   letter-spacing: 0.18px;
+  display: inline-table;
 `;
 
 export const DropdownIcon = styled.div`
@@ -429,6 +429,8 @@ export const ReviewContainer = styled.div`
   /* Firefox 스크롤바 */
   scrollbar-width: thin;
   scrollbar-color: #c1c5d0 #f7f8ff;
+
+  padding: 0 0 34px;
 `;
 
 export const ReviewHeader = styled.div`
@@ -496,6 +498,7 @@ export const ReviewList = styled.div`
   align-items: flex-start;
   width: 100%;
   flex: 1;
+  align-items: center;
 `;
 
 export const ReviewItem = styled.div`

@@ -14,8 +14,7 @@ export const Box = styled.div<{ $open: boolean; $confirmed?: boolean }>`
         linear-gradient(135deg, #6f7cff 0%, #37d1c9 100%) border-box
       `
       : "#f9faff"};
-  transition: border-color 0.25s ease, box-shadow 0.25s ease,
-    background 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
   overflow: hidden;
 `;
 
@@ -280,7 +279,7 @@ export const DateChip = styled.div`
   color: #1a2a57;
   font-weight: 600;
   font-size: 14px;
-  white-space: nowrap;d
+  white-space: nowrap;
   cursor: pointer;
 `;
 

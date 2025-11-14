@@ -49,8 +49,8 @@ export const LogoContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 67.854px;
-  height: 44.554px;
+  /* width: 67.854px;
+  height: 44.554px; */
 `;
 
 export const Logo = styled.img`

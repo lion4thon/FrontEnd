@@ -19,7 +19,7 @@ const H = {
       )
       1;
     padding: 0;
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
@@ -115,7 +115,7 @@ const H = {
     font-weight: var(--caption-font-weight);
     padding: 10px 25px;
     cursor: pointer;
-    height: 42.75px;
+    height: 27.75px;
     transition: all 0.2s ease;
 
     white-space: nowrap; /* FIX: '로그인' 세로로 갈라짐 방지 */

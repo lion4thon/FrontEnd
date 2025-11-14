@@ -1,5 +1,7 @@
 import * as S from "./PackageCard.style";
 
+import fitness1 from "../../assets/sample_pic2.svg";
+
 /* 타입 선언 */
 type PackageItem = {
   id: number;
@@ -29,7 +31,14 @@ export default function PackageCard({ item, onClick }: Props) {
   return (
     <S.Card onClick={() => onClick?.(id)} role="button" tabIndex={0}>
       <S.ThumbWrap>
-        <S.Thumb src={thumbnail} alt={title} />
+        <S.Thumb
+          src={
+            !thumbnail || thumbnail === "/default-thumbnail.png"
+              ? fitness1
+              : thumbnail
+          }
+          alt={title}
+        />
         {badgeLabel && <S.Badge>{badgeLabel}</S.Badge>}
       </S.ThumbWrap>
 

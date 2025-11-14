@@ -32,7 +32,7 @@ export const Card = styled.div`
 export const ThumbWrap = styled.div`
   position: relative;
   width: 224px;
-  height: 255px;
+  height: 196px;
   border-radius: ${radiusInner};
   overflow: hidden;
   background: #d9d9d9;
@@ -41,12 +41,12 @@ export const ThumbWrap = styled.div`
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(
+    /* background: linear-gradient(
       to bottom,
       ${({ theme }) => theme.colors.black} 55%,
       rgba(244, 247, 255, 0.85) 88%,
       ${({ theme }) => theme.colors.gray50} 100%
-    );
+    ); */
     pointer-events: none;
   }
 `;
