@@ -81,8 +81,8 @@ export default function PackageDetailPage() {
 
   const handleBack = () => navigate(-1);
 
-  const handleAddToBookmark = () => console.log("[보관함 담기]", data?.passId);
-  const handleAddToCart = () => console.log("[장바구니 담기]", data?.passId);
+  const handleAddToBookmark = () => navigate("/mypage");
+  const handleAddToCart = () => navigate("/cart");
 
   return (
     <>

@@ -9,7 +9,7 @@ import FilterBar from "../../components/FilterBar/FilterBar";
 import PackageCard from "../../components/PackageCard/PackageCard";
 import HorizontalSection from "../../components/HorizontalSection";
 import * as S from "./Package.style";
-import Footer from "../../components/Footer/Footer";
+// import Footer from "../../components/Footer/Footer";
 
 // import fitness1 from "../../assets/sample_pic2.svg";
 
@@ -318,7 +318,7 @@ export default function PackagePage() {
         />
       </S.Page>
 
-      <Footer />
+      {/* <Footer /> */}
 
       {/* 모달들 */}
       <LoginRequiredModal

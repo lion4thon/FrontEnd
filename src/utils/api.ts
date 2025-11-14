@@ -18,8 +18,8 @@ import type {
 // 개발 환경에서는 Vite proxy를 사용하므로 빈 문자열 (프록시가 /api로 시작하는 요청을 처리)
 // 프로덕션에서는 실제 API 서버 URL 사용
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "" : "http://localhost:8080");
+  import.meta.env.VITE_API_BASE_URL
+  // (import.meta.env.DEV ? "" : "http://localhost:8080");
 
 /**
  * API 요청 옵션 타입

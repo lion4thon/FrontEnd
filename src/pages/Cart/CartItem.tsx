@@ -96,7 +96,7 @@ export default function CartItem({
             aria-expanded={open}
             onClick={() => setOpen(true)}
           >
-            <span>매장 예약하기</span>
+            <span>{confirmed ? "매장 예약 완료" : "매장 예약하기"}</span>
             <I.CaretIcon $open={open} src={reservedrop} />
           </I.FooterToggle>
         </>
@@ -132,7 +132,7 @@ export default function CartItem({
               setOpen(false);
             }}
           >
-            예약 완료
+        예약 완료
           </I.PrimaryCTA>
         </I.Dropdown>
       )}

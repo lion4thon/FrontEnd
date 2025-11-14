@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as S from "./FilterBar.style";
 import {
   PRICE_OPTIONS,
@@ -23,6 +23,22 @@ export default function FilterBar({
 }: FilterBarProps) {
   const [open, setOpen] = useState({ price: false, sort: false });
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(event.target as Node)) {
+        setOpen({ price: false, sort: false });
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const toggle = (key: keyof typeof open) =>
     setOpen({ price: false, sort: false, [key]: !open[key] });
 
@@ -41,7 +57,7 @@ export default function FilterBar({
   };
 
   return (
-    <S.Container>
+    <S.Container ref={containerRef}>
       {/* 금액 */}
       <S.Group>
         <S.Toggle

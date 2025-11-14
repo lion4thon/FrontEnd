@@ -14,8 +14,10 @@ import type {
   Review,
   Store,
 } from "./Mypage.types";
-import { getMyPasses } from "../../utils/api";
+// import { getMyPasses } from "../../utils/api";
 import { ApiError } from "../../utils/api";
+
+import { getMyPasses } from "./apis/myPasses";
 
 // Mock data - replace with real data later
 // TODO: API 연결 시 이 부분을 API 호출로 대체
@@ -471,7 +473,7 @@ export default function Mypage() {
                           </S.StoragePackagePriceContainer>
                         </S.StoragePackageContent>
                       </S.StoragePackageInfo>
-                      <S.CartIcon />
+                      <S.CartIcon onClick={() => navigate("/cart")} />
                     </S.StoragePackageCard>
                     ))
                   )}

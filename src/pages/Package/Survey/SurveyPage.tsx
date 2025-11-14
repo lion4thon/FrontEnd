@@ -283,11 +283,12 @@ const submit = async () => {
   } catch (e) {
     console.error("설문 제출 실패", e);
     alert("설문 제출 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+    setOpenComplete(false);
   }
 };
 
   return (
-    <S.Page>
+    <S.Page >
       <S.Header>
         <S.Title>
           <h1>
@@ -342,6 +343,7 @@ const submit = async () => {
         open={openIncomplete}
         onClose={onCancelExit}
         labelledById="incomplete-title"
+        backdropClosable
         actions={
           <>
             <Btn variant="primary" onClick={onCancelExit}>
@@ -375,6 +377,7 @@ const submit = async () => {
         open={openComplete}
         onClose={onConfirmComplete}
         labelledById="complete-title"
+        backdropClosable
         actions={
           <Btn variant="primary" onClick={onConfirmComplete}>
             AI추천 패키지 확인하기

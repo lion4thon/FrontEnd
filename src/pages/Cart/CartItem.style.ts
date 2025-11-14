@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Box = styled.div<{ $open: boolean; $confirmed?: boolean }>`
   /* 확정 전에는 파란 단색, 확정 후에는 그라데이션 */
-  border: 1.5px solid
+  border: 2px solid
     ${({ $open, $confirmed }) =>
       $confirmed ? "transparent" : $open ? "#6f7cff" : "#b7c4ff"};
   border-radius: 28px;
@@ -11,9 +11,10 @@ export const Box = styled.div<{ $open: boolean; $confirmed?: boolean }>`
       ? `
         /* 내부 면은 기존 배경, 외곽선만 그라데이션 */
         linear-gradient(#f9faff, #f9faff) padding-box,
-        linear-gradient(135deg, #6f7cff 0%, #37d1c9 100%) border-box
+        linear-gradient(260deg, #476AFC 11.01%, #8896FF 44.52%, #C5D6FF 68.58%, #81DECE 85.74%, #4CE5A7 91.7%) border-box
       `
       : "#f9faff"};
+
   transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
   overflow: hidden;
 `;
@@ -31,7 +32,7 @@ export const ThumbWrap = styled.div`
   width: 160px;
   height: 160px;
   border-radius: 20px;
-  border: 0.5px solid #c1c6d1;
+  /* border: 0.5px solid #c1c6d1; */
   overflow: hidden;
   flex-shrink: 0;
 `;

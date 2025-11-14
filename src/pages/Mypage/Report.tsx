@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import ReportCreate from "./ReportCreate";
 import type { ReportData } from "./ReportCreate";
 import * as S from "./Report.styles";
@@ -205,7 +205,7 @@ export default function Report() {
   if (!packageData) {
     return (
       <>
-        <Header />
+        {/* <Header /> */}
         <S.Container>
           <S.Content>
             <S.HeaderSection>
@@ -233,7 +233,7 @@ export default function Report() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <ReportCreate
         open={isModalOpen}
         onClose={handleCloseModal}

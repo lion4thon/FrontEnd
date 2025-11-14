@@ -44,7 +44,7 @@ export default function Dialog({
   };
 
   return createPortal(
-    <Backdrop onMouseDown={handleBackdrop}>
+    <Backdrop onMouseDown={handleBackdrop}  >
       <Panel role="dialog" aria-modal="true" aria-labelledby={labelledById}>
         {title || actions ? (
           <HeaderFooterLayout>
