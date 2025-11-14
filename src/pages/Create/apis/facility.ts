@@ -1,6 +1,14 @@
 // 검색 api, 상세 정보 검색 api, 리뷰 검색 api
 import { api } from "../../../lib/api";
 
+// 파일 상단 어딘가에 추가
+export type LocationStore = {
+  id: number | string;
+  name: string;
+  address: string;
+  image: string;
+};
+
 export interface ApiFacility {
   id: number;
   name: string;

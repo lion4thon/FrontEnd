@@ -5,10 +5,11 @@ import CartItem from "./CartItem";
 import thumb from "../../assets/cart-sample.svg";
 import checkIcon from "../../assets/double-check.svg";
 
-import { api } from "../../lib/api";
+// import { api } from "../../lib/api";
 import PayModal from "./components/PayModal";
-import { requestPayment } from "./apis/payment"; 
-import { getMyPasses, getCartPasses } from "./apis/myPasses";
+// import { requestPayment } from "./apis/payment"; 
+// import { getMyPasses, getCartPasses } from "./apis/myPasses";
+import { getCartPasses } from "./apis/myPasses";
 import type { MyPassDto } from "./apis/myPasses";
 import { createReservation } from "./apis/reservation";
 
@@ -46,59 +47,59 @@ export type ReservationItemType = {
   category: string;
 };
 
-type SummarySessionDto = {
-  sessionId: number;
-  category: string;
-  name: string;
-  address: string;
-  type: string;
-  price: number;
-  imageUrl?: string;
-  datetime?: string;
-  selected?: boolean;
-};
+// type SummarySessionDto = {
+//   sessionId: number;
+//   category: string;
+//   name: string;
+//   address: string;
+//   type: string;
+//   price: number;
+//   imageUrl?: string;
+//   datetime?: string;
+//   selected?: boolean;
+// };
 
-type SummaryPackageDto = {
-  packageId: number;
-  packageName: string;
-  packageDescription?: string;
-  packageImageUrl?: string;
-  packagePrice: number;
-  sessions: SummarySessionDto[];
-};
+// type SummaryPackageDto = {
+//   packageId: number;
+//   packageName: string;
+//   packageDescription?: string;
+//   packageImageUrl?: string;
+//   packagePrice: number;
+//   sessions: SummarySessionDto[];
+// };
 
-type SummaryData = {
-  passName: string[];   // 장바구니에 담긴 패키지 이름 목록
-  totalPrice: number;   // 총 결제 금액
-};
+// type SummaryData = {
+//   passName: string[];   // 장바구니에 담긴 패키지 이름 목록
+//   totalPrice: number;   // 총 결제 금액
+// };
 
-type SummaryResponse = {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  data: SummaryData;
-};
+// type SummaryResponse = {
+//   isSuccess: boolean;
+//   code: string;
+//   message: string;
+//   data: SummaryData;
+// };
 
 /** 서버 DTO → CartPage에서 쓰는 타입으로 매핑 */
-const mapSummaryToCartItem = (pkg: SummaryPackageDto): CartItemType => ({
-  id: pkg.packageId,
-  name: pkg.packageName,
-  description: pkg.packageDescription,
-  image: pkg.packageImageUrl || thumb,
-  price: pkg.packagePrice,
-  sessions: pkg.sessions?.map((s) => ({
-    id: s.sessionId,
-    category: s.category,
-    name: s.name,
-    address: s.address,
-    type: s.type,
-    price: s.price,
-    image: s.imageUrl || thumb,
-    datetime: s.datetime,
-    selected: s.selected ?? false,
-  })),
+// const mapSummaryToCartItem = (pkg: SummaryPackageDto): CartItemType => ({
+//   id: pkg.packageId,
+//   name: pkg.packageName,
+//   description: pkg.packageDescription,
+//   image: pkg.packageImageUrl || thumb,
+//   price: pkg.packagePrice,
+//   sessions: pkg.sessions?.map((s) => ({
+//     id: s.sessionId,
+//     category: s.category,
+//     name: s.name,
+//     address: s.address,
+//     type: s.type,
+//     price: s.price,
+//     image: s.imageUrl || thumb,
+//     datetime: s.datetime,
+//     selected: s.selected ?? false,
+//   })),
   
-});
+// });
 
 // /api/my-passes 응답을 CartItemType으로 변환
 const mapMyPassToCartItem = (pass: MyPassDto): CartItemType => ({
@@ -134,18 +135,13 @@ export default function CartPage() {
 const toIsoString = (datetime: string) => {
   if (!datetime) return "";
 
-  // 1) 이미 ISO 형태인 경우 (예: "2025-12-27T10:00" 또는 "2025-12-27T10:00:00")
   if (datetime.includes("T")) {
-    // "YYYY-MM-DDTHH:mm" 이면 뒤에 ":00"만 붙여줌
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(datetime)) {
       return `${datetime}:00`;
     }
-    // 이미 초까지 있으면 그대로 사용
     return datetime;
   }
 
-  // 2) 한국식 포맷: "YYYY. MM. DD(요일) HH:mm"
-  // 예: "2025. 11. 16(일) 09:00"
   const krMatch = datetime.match(
     /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\([^)]*\)\s*(\d{1,2}):(\d{2})/
   );
@@ -160,7 +156,6 @@ const toIsoString = (datetime: string) => {
     return `${year}-${mm}-${dd}T${hh}:${minute}:00`;
   }
 
-  // 3) 혹시 모를 다른 한국식 포맷: "YYYY. MM. DD HH:mm" (요일 없이)
   const dotMatch = datetime.match(
     /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s+(\d{1,2}):(\d{2})/
   );
@@ -175,7 +170,6 @@ const toIsoString = (datetime: string) => {
     return `${year}-${mm}-${dd}T${hh}:${minute}:00`;
   }
 
-  // 4) 마지막 fallback: "YYYY-MM-DD HH:mm" 형태인 경우
   const spaceMatch = datetime.match(
     /(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})/
   );
@@ -194,7 +188,7 @@ const toIsoString = (datetime: string) => {
 };
 
 const buildReservationPayloads = () => {
-  console.log("[DEBUG] cartItems in buildReservationPayloads", cartItems);
+  // console.log("[DEBUG] cartItems in buildReservationPayloads", cartItems);
 
   const payloads: {
     facilityId: number;
@@ -209,14 +203,14 @@ const buildReservationPayloads = () => {
         const start = toIsoString(s.datetime);
         const end = start; // 지금은 시작/종료 동일하게
 
-        console.log(
-          "[DEBUG] reservation unit",
-          s.id,
-          "datetime:",
-          s.datetime,
-          "->",
-          start
-        );
+        // console.log(
+        //   "[DEBUG] reservation unit",
+        //   s.id,
+        //   "datetime:",
+        //   s.datetime,
+        //   "->",
+        //   start
+        // );
 
         payloads.push({
           facilityId: s.id, // facilityId
@@ -231,76 +225,6 @@ const buildReservationPayloads = () => {
   return payloads;
 };
 
-  // const [cartItems, setCartItems] = useState<CartItemType[]>([
-  //   {
-  //     id: 1,
-  //     name: "1년차 헬린이를 위한 입문용 패키지",
-  //     description:
-  //       "기초체력과 근력 강화에 안성맞춤 패키지! 직접 경험해 본 매장들만 고르고 골라 담은 나만 알고 싶은 패키지...",
-  //     image: thumb,
-  //     price: 43000,
-  //     sessions: [
-  //       {
-  //         id: 11,
-  //         category: "필라테스",
-  //         name: "버블 필라테스 & PT 미아점",
-  //         address: "서울 강북구 도봉로 204 3층 버블필라테스",
-  //         type: "그룹 (4인)  1타임 (60분)",
-  //         price: 20000,
-  //         image: thumb,
-  //         selected: true,
-  //         datetime: "2025-11-15 14:00",
-  //       },
-  //       {
-  //         id: 12,
-  //         category: "헬스 트레이닝",
-  //         name: "에스핏 휘트니스 수유점",
-  //         address: "서울 강북구 도봉로 67길 18 3층",
-  //         type: "1일권",
-  //         price: 10000,
-  //         image: thumb,
-  //       },
-  //       {
-  //         id: 13,
-  //         category: "요가",
-  //         name: "마음수련 미아 명상센터",
-  //         address: "서울 강북구 우이천로 302 덕후빌딩 1층",
-  //         type: "그룹 (15인)  1타임 (60분)",
-  //         price: 13000,
-  //         image: thumb,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "갓 시작한 필린이를 위한 패키지",
-  //     description:
-  //       "부담 없는 구성으로 가볍게 시작하기 좋은 조합입니다. 선생님들이 친절하고 시설도 깔끔해요.",
-  //     image: thumb,
-  //     price: 43000,
-  //     sessions: [
-  //       {
-  //         id: 21,
-  //         category: "필라테스",
-  //         name: "미소 필라테스 미아역점",
-  //         address: "서울 강북구 도봉로 173 4층",
-  //         type: "그룹 (6인)  1타임 (50분)",
-  //         price: 23000,
-  //         image: thumb,
-  //       },
-  //       {
-  //         id: 22,
-  //         category: "요가",
-  //         name: "힐링 요가숲 수유점",
-  //         address: "서울 강북구 도봉로 318 2층",
-  //         type: "1일권",
-  //         price: 12000,
-  //         image: thumb,
-  //       },
-  //     ],
-  //   },
-  // ]);
-
 
   const [cartItems, setCartItems] = useState<CartItemType[]>([]); // 초기값은 빈 배열
   const [, setLoading] = useState(false);
@@ -309,26 +233,15 @@ const buildReservationPayloads = () => {
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
 
-
-//  const handlePay = async () => {
-//   if (isPaying || summaryTotal <= 0) return;
-
-//   try {
-//     setIsPaying(true);
-
-//     const passIds = reservedPackages.map((pkg) => pkg.id);
-//     console.log("[PAY REQUEST]", passIds);
-
-//     const result = await requestPayment(passIds);
-//     console.log("[PAY RESULT]", result);
-
-//     setIsPayModalOpen(false);
-//   } catch (e) {
-//     console.error("결제 실패", e);
-//   } finally {
-//     setIsPaying(false);
-//   }
-// };
+  useEffect(() => {
+    const total = cartItems.reduce((sum, pkg) => {
+      const hasSelectedSession = (pkg.sessions || []).some(
+        (s) => s.selected && s.datetime
+      );
+      return hasSelectedSession ? sum + (pkg.price || 0) : sum;
+    }, 0);
+    setSummaryTotal(total);
+  }, [cartItems]);
 
 const handlePay = async () => {
   if (isPaying || summaryTotal <= 0) return;
@@ -336,15 +249,15 @@ const handlePay = async () => {
   try {
     setIsPaying(true);
 
-    const passIds = reservedPackages.map((pkg) => pkg.id);
-    console.log("[PAY REQUEST]", passIds);
+    // const passIds = reservedPackages.map((pkg) => pkg.id);
+    // console.log("[PAY REQUEST]", passIds);
 
-    const result = await requestPayment(passIds);
-    console.log("[PAY RESULT]", result);
+    // const result = await requestPayment(passIds);
+    // console.log("[PAY RESULT]", result);
 
     // 결제 성공이라고 판단되면 여기서 예약 생성
     const reservationPayloads = buildReservationPayloads();
-    console.log("[RESERVATION PAYLOADS]", reservationPayloads);
+    // console.log("[RESERVATION PAYLOADS]", reservationPayloads);
 
     await Promise.all(
       reservationPayloads.map((payload) => createReservation(payload))
@@ -361,51 +274,14 @@ const handlePay = async () => {
   }
 };
 
-  // 장바구니(예약 목록) 조회
-// 장바구니(예약 목록) 조회
-// useEffect(() => {
-//   const fetchSummary = async () => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-
-//       const res = await api.get<SummaryResponse>("/api/summary");
-//       console.log("[SUMMARY RAW]", res.data);
-
-//       const { passName, totalPrice } = res.data.data;
-
-//       // 패키지 이름 배열을 CartItem으로 변환
-//       const items: CartItemType[] = passName.map((name, index) => ({
-//         id: index + 1,
-//         name,
-//         image: thumb,
-//         price: 0,        // 서버에서 패키지별 가격이 안 오기 때문에 일단 0으로 둠
-//         sessions: [],    // /summary에는 세션 정보가 없어서 빈 배열
-//       }));
-
-//       setCartItems(items);
-//       // totalPrice는 필요하면 따로 state로 들고가도 됨
-//       setSummaryTotal(totalPrice);
-//     } catch (e) {
-//       console.error("예약 목록 조회 실패", e);
-//       setError("예약 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   fetchSummary();
-// }, []);
-
 useEffect(() => {
   const fetchCart = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // /api/my-passes?status=IN_CART 호출
       const res = await getCartPasses();
-      console.log("[MY PASSES RAW]", res);
+      // console.log("[MY PASSES RAW]", res);
 
       const passes = res.data; // MyPassDto[]
 
@@ -414,9 +290,6 @@ useEffect(() => {
 
       setCartItems(items);
 
-      // 총 결제 금액은 passPrice 합으로 계산
-      const total = passes.reduce((sum, p) => sum + p.passPrice, 0);
-      setSummaryTotal(total);
     } catch (e) {
       console.error("생성한 패키지 조회 실패", e);
       setError("예약 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
@@ -453,29 +326,29 @@ useEffect(() => {
     setCartItems((prev) => prev.filter((it) => it.id !== id));
   };
 
-  const reservedSessions = useMemo(() => {
-    const list: ReservationItemType[] = [];
-    for (const pkg of cartItems) {
-      for (const s of pkg.sessions || []) {
-        if (s.selected && s.datetime) {
-          const [date, time] = s.datetime.split(" ");
-          list.push({
-            id: s.id,
-            name: s.name,
-            address: s.address,
-            image: s.image,
-            type: s.type,
-            date,
-            time,
-            status: "예약완료",
-            price: s.price,
-            category: s.category,
-          });
-        }
-      }
-    }
-    return list;
-  }, [cartItems]);
+  // const reservedSessions = useMemo(() => {
+  //   const list: ReservationItemType[] = [];
+  //   for (const pkg of cartItems) {
+  //     for (const s of pkg.sessions || []) {
+  //       if (s.selected && s.datetime) {
+  //         const [date, time] = s.datetime.split(" ");
+  //         list.push({
+  //           id: s.id,
+  //           name: s.name,
+  //           address: s.address,
+  //           image: s.image,
+  //           type: s.type,
+  //           date,
+  //           time,
+  //           status: "예약완료",
+  //           price: s.price,
+  //           category: s.category,
+  //         });
+  //       }
+  //     }
+  //   }
+  //   return list;
+  // }, [cartItems]);
 
   const reservedPackages = useMemo(
     () =>

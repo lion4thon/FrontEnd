@@ -245,7 +245,6 @@ export const DetailText = styled.span`
   line-height: 27px;
   text-align: left;
   white-space: nowrap;
-  letter-spacing: 0.18px;
 `;
 
 export const DetailContent = styled.div`
@@ -322,6 +321,7 @@ export const BusinessHours = styled.span`
   text-align: left;
   white-space: nowrap;
   letter-spacing: 0.18px;
+  display: inline-table;
 `;
 
 export const DropdownIcon = styled.div`

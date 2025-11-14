@@ -9,7 +9,8 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import * as S from "./StoreInformation.styles";
 // import Header from "../../components/Header/Header";
 // import { getFacilityDetail, getFacilityReviews } from "../../utils/api";
-import { getFacilityDetail, getFacilityReviews } from "./apis/facility";
+import { getFacilityDetail, getFacilityReviews  } from "./apis/facility";
+import type { LocationStore } from "./apis/facility";
 import { ApiError } from "../../utils/api";
 
 // 매장 정보 데이터 타입 (API에서 받아올 데이터)
@@ -63,7 +64,7 @@ export const StoreInformation: React.FC = () => {
 
   // location.state에서 전달된 매장 정보 가져오기
   const locationState = location.state as {
-    store?: any;
+    store?: LocationStore;
     sport?: string;
   } | null;
 

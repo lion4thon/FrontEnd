@@ -132,7 +132,8 @@ export const RightBody = styled.div`
 
 export const Section = styled.div`
   display: grid;
-  grid-template-columns: 120px 1fr auto;
+  /* grid-template-columns: 120px 1fr auto; */
+  grid-template-columns: 68px 1fr auto;
   align-items: flex-start;
   padding: 16px 24px;
   border-top: 1px solid #eef2fb;
@@ -152,6 +153,7 @@ export const RowContent = styled.div`
   font-size: 15px;
   color: #1a2745;
   line-height: 1.4;
+  text-align: center;
 
   .ok {
     color: #416ef0;

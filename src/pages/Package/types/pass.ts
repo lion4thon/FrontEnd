@@ -3,6 +3,7 @@ export interface PassItem {
   passName: string;
   passDescription: string;
   passPrice: number;
+  imageUrl?: string;
 }
 
 export interface PassListResponse {

@@ -12,7 +12,7 @@ type Props = {
 
 export default function SurveyRequiredModal({ open, onClose, onGoSurvey }: Props) {
   return (
-      <S.Backdrop onClick={onClose}>
+  <S.Backdrop onClick={onClose}>
     <Dialog open={open} onClose={onClose} labelledById="survey-required-title" title="">
         <div onClick={(e) => e.stopPropagation()}>
           <S.Wrap>
@@ -29,6 +29,6 @@ export default function SurveyRequiredModal({ open, onClose, onGoSurvey }: Props
           </S.PrimaryBtn>
         </div>
     </Dialog>
-      </S.Backdrop>
+  </S.Backdrop>
   );
 }
