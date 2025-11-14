@@ -499,6 +499,8 @@ export const ReviewList = styled.div`
   width: 100%;
   flex: 1;
   align-items: center;
+  margin-top: 29px;
+
 `;
 
 export const ReviewItem = styled.div`

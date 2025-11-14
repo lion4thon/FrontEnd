@@ -99,7 +99,8 @@ export const SearchResultList = styled.div`
   flex-direction: column;
   gap: 16px;
   padding: 0 24px 24px 24px;
-  max-height: 480px;
+  /* max-height: 480px; */
+  max-height: 412px;
   overflow-y: auto;
 
   /* 스크롤바 스타일링 */
