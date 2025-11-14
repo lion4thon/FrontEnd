@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import MyReview from "./MyReview";
 import MyReviewCreate, { type ReviewCreateData } from "./MyReviewCreate";
 import MyReviewDelete from "./MyReviewDelete";
@@ -288,7 +288,7 @@ export default function Mypage() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <S.Container>
         <S.HeaderPlaceholder />
         <S.Content>
