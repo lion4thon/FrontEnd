@@ -7,6 +7,7 @@ import { GlobalStyle } from "./styles/GlobalStyle";
 import AppLayout from "./layouts/AppLayout";
 import Onboarding from "./components/Onboarding/Onboarding";
 import PackagePage from "./pages/Package/PackagePage";
+import PackageDetailPage from "./pages/Package/PackageDetailPage";
 import SurveyPage from "./pages/Package/Survey/SurveyPage";
 // import Create from "./pages/Create/Create";
 import CartPage from "./pages/Cart/CartPage";
@@ -40,6 +41,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<Onboarding />} />
             <Route path="/package" element={<PackagePage />} />
+            <Route path="/package/:passId" element={<PackageDetailPage />} />
             <Route path="/package/survey" element={<SurveyPage />} />
             <Route path="/package/survey/:page" element={<SurveyPage />} />
             {/* <Route path="/create" element={<Create />} /> */}
