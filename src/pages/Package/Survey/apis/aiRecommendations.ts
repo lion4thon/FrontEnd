@@ -34,6 +34,7 @@ export interface AiRecommendation {
   pass_id: number;
   purposeTag: string;
   predicted_score: number;
+  image_url: string;
 }
 
 /** /api/ai/recommendations 의 data 필드 */
@@ -41,6 +42,7 @@ export interface AiRecommendationResponse {
   recommendations: AiRecommendation[];
   total_count: number;
 }
+
 
 /** AI 추천 패키지 조회 */
 export async function getAiRecommendations(

@@ -10,6 +10,7 @@ import {
 import {
   getAiRecommendations,
   type AiRecommendationRequest,
+  type AiRecommendationResponse,
 } from "./apis/aiRecommendations";
 
 import { QUESTIONS, PAGE_GROUPS } from "./survey.schema";
@@ -169,6 +170,7 @@ const submit = async () => {
     environment: surveyPayload.preferredEnvironment,
     preferred_sports: (state.interest ?? []).map(String),
     recovery_level: surveyPayload.recoveryCondition,
+    // budget_range: String(surveyPayload.price),
     budget_range: String(surveyPayload.price),
     avoid_factors: surveyPayload.avoidFactors,
   };
@@ -176,10 +178,24 @@ const submit = async () => {
   console.log("[AI PAYLOAD]", aiPayload);
   console.log("[AI URL]", api.defaults.baseURL, "/api/ai/recommendations");
 
+
   // AI 추천 패키지 조회
-  const aiResult = await getAiRecommendations(aiPayload);
+  // const aiResult = await getAiRecommendations(aiPayload);
+  // console.log("[AI RESULT]", aiResult);
+  // return aiResult; 
+
+  // AI 추천 패키지 조회
+let aiResult: AiRecommendationResponse;
+
+try {
+  aiResult = await getAiRecommendations(aiPayload);
   console.log("[AI RESULT]", aiResult);
-  return aiResult; 
+} catch (error) {
+  console.error("[AI ERROR] 실제 AI 호출 실패, 목 데이터로 대체합니다.", error);
+  aiResult = MOCK_AI_RESULT;
+}
+
+return aiResult;
 };
 
   // 값 유무에 따라 저장하든 버리든
@@ -403,3 +419,100 @@ const submit = async () => {
     </S.Page>
   );
 }
+
+
+const MOCK_AI_RESULT: AiRecommendationResponse = {
+   "recommendations": [
+            {
+                "name": "즐거운 운동 (풋살1회+댄스1회)",
+                "price": 26000,
+                "intensity": "MID",
+                "pass_id": 20,
+                "purposeTag": "STRESS_RELIEF",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://plus.unsplash.com/premium_photo-1726254136091-57392c67e442?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                "name": "전신 운동 콤보 (클라이밍1회+수영1회)",
+                "price": 31000,
+                "intensity": "HIGH",
+                "pass_id": 18,
+                "purposeTag": "FITNESS",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1560088971-123158b94b34?q=80&w=1738&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                "name": "헬린이 기초 체력 패키지 (헬스 2회 + PT 1회)",
+                "price": 35000,
+                "intensity": "MID",
+                "pass_id": 38,
+                "purposeTag": "FITNESS",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fCVFRCU5NyVBQyVFQyU4QSVBNCVFQyU5RSVBNXxlbnwwfHwwfHx8MA%3D%3D"
+            },
+            {
+                "name": "헬린이 스타터 팩 (헬스 1회 + PT 1회)",
+                "price": 29000,
+                "intensity": "LOW",
+                "pass_id": 37,
+                "purposeTag": "FITNESS",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8JUVEJTk3JUFDJUVDJThBJUE0JUVDJTlFJUE1fGVufDB8fDB8fHww"
+            },
+            {
+                "name": "요가 입문자 스타터 팩 (요가 1회)",
+                "price": 27000,
+                "intensity": "LOW",
+                "pass_id": 43,
+                "purposeTag": "STRESS_RELIEF",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://plus.unsplash.com/premium_photo-1661777196224-bfda51e61cfd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8JUVDJTlBJTk0JUVBJUIwJTgwfGVufDB8fDB8fHww"
+            },
+            {
+                "name": "구기 종목 탐험 (테니스1회+풋살1회)",
+                "price": 30000,
+                "intensity": "MID",
+                "pass_id": 29,
+                "purposeTag": "EXPLORE",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1541744573515-478c959628a0?q=80&w=1035&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                "name": "요가 입문자 기초 패키지 (요가 2회)",
+                "price": 33000,
+                "intensity": "LOW",
+                "pass_id": 44,
+                "purposeTag": "STRESS_RELIEF",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8JUVDJTlBJTk0JUVBJUIwJTgwfGVufDB8fDB8fHww"
+            },
+            {
+                "name": "지방 연소 (댄스1회+수영1회)",
+                "price": 31000,
+                "intensity": "MID",
+                "pass_id": 27,
+                "purposeTag": "DIET",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1616711854228-28b39ad7eb80?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                "name": "요가 입문자 종합 프로그램 (요가 2회 + 필라테스 1회)",
+                "price": 39000,
+                "intensity": "MID",
+                "pass_id": 45,
+                "purposeTag": "FITNESS",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1717500252573-d31d4bf5ddf1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8JUVEJTk1JTg0JUVCJTlEJUJDJUVEJTg1JThDJUVDJThBJUE0fGVufDB8fDB8fHww"
+            },
+            {
+                "name": "새로운 도전 (풋살1회+클라이밍1회)",
+                "price": 24000,
+                "intensity": "MID",
+                "pass_id": 25,
+                "purposeTag": "EXPLORE",
+                "predicted_score": 14.817466698049722,
+                "image_url": "https://images.unsplash.com/photo-1658678921674-dc4943b10dee?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            }
+        ],
+        "total_count": 10
+};

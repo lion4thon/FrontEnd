@@ -87,6 +87,7 @@ type AiRecommendationItem = {
   intensity: string;
   purposeTag: string;
   predicted_score: number;
+  image_url: string;
 };
 
 function mapAiRecommendationToPackage(rec: AiRecommendationItem): PackageItem {
@@ -95,7 +96,8 @@ function mapAiRecommendationToPackage(rec: AiRecommendationItem): PackageItem {
     title: rec.name,
     detail: "",
     pricePerClass: rec.price,
-    thumbnail: "/default-thumbnail.png",
+    // thumbnail: "/default-thumbnail.png",
+    thumbnail: rec.image_url || "/default-thumbnail.png",
     tags: inferTagsFromPassName(rec.name),
     totalSessions: 10,
   };
