@@ -1,5 +1,5 @@
 import { api } from "../../../lib/api";
-import type { PassListResponse } from "../types/pass";
+import type { PassListResponse, PassDetailResponse } from "../types/pass";
 
 export async function fetchPasses(query?: {
   passName?: string;
@@ -12,4 +12,9 @@ export async function fetchPasses(query?: {
   });
 
   return res.data.data; // PassItem[]
+}
+
+export async function fetchPassDetail(passId: number) {
+  const res = await api.get<PassDetailResponse>(`/api/passes/${passId}`);
+  return res.data.data; // PassDetail
 }

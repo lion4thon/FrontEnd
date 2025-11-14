@@ -17,7 +17,10 @@ import { useAuth } from "../../providers/AuthProvider";
 import LoginRequiredModal from "../../components/Modal/LoginRequiredModal";
 import SurveyRequiredModal from "../../components/Modal/SurveyRequiredModal";
 
-import type { PriceRange, Sort } from "../../components/FilterBar/FilterBar.types";
+import type {
+  PriceRange,
+  Sort,
+} from "../../components/FilterBar/FilterBar.types";
 
 type PackageItem = ComponentProps<typeof PackageCard>["item"];
 
@@ -30,7 +33,12 @@ function inferTagsFromPassName(name?: string): string[] {
   if (name.includes("웨이트") || name.includes("PT") || name.includes("헬스")) {
     tags.push("근력");
   }
-  if (name.includes("수영") || name.includes("러닝") || name.includes("걷기") || name.includes("달리기")) {
+  if (
+    name.includes("수영") ||
+    name.includes("러닝") ||
+    name.includes("걷기") ||
+    name.includes("달리기")
+  ) {
     tags.push("유산소");
   }
   if (name.includes("풋살") || name.includes("축구") || name.includes("농구")) {
@@ -39,7 +47,11 @@ function inferTagsFromPassName(name?: string): string[] {
     }
     tags.push("밸런스");
   }
-  if (name.includes("요가") || name.includes("필라테스") || name.includes("스트레칭")) {
+  if (
+    name.includes("요가") ||
+    name.includes("필라테스") ||
+    name.includes("스트레칭")
+  ) {
     tags.push("유연성");
     tags.push("이완");
   }
@@ -62,7 +74,6 @@ function mapPassToPackage(p: PassItem): PackageItem {
     title: p.passName,
     detail: p.passDescription,
     pricePerClass: p.passPrice,
-    // 서버에서 내려주는 이미지 URL 사용, 없으면 기본 썸네일
     thumbnail: p.imageUrl || "/default-thumbnail.png",
     tags: inferTagsFromPassName(p.passName),
     totalSessions: 10,
@@ -121,7 +132,8 @@ export default function PackagePage() {
 
   const location = useLocation();
   const aiRecommendations = location.state?.aiRecommendations ?? [];
-  const hasAiRecommendations = aiRecommendations && aiRecommendations.length > 0;
+  const hasAiRecommendations =
+    aiRecommendations && aiRecommendations.length > 0;
 
   // 정렬 변경 시 정책 분기 (AI 추천순 클릭 → 로그인/설문 체크)
   const handleSortChange = (v: Sort) => {
@@ -152,7 +164,9 @@ export default function PackagePage() {
   };
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
   };
 
   // 데이터 불러오기 연동
@@ -191,15 +205,24 @@ export default function PackagePage() {
   }, [query, selectedTags, sort, uiPackages]);
 
   const sectionGym = useMemo(
-    () => filtered.filter((p) => p.tags.some((t) => ["근력", "지구력", "코어"].includes(t))),
+    () =>
+      filtered.filter((p) =>
+        p.tags.some((t) => ["근력", "지구력", "코어"].includes(t))
+      ),
     [filtered]
   );
   const sectionYoga = useMemo(
-    () => filtered.filter((p) => p.tags.some((t) => ["유연성", "이완"].includes(t))),
+    () =>
+      filtered.filter((p) =>
+        p.tags.some((t) => ["유연성", "이완"].includes(t))
+      ),
     [filtered]
   );
   const sectionActive = useMemo(
-    () => filtered.filter((p) => p.tags.some((t) => ["유산소", "밸런스", "클라이밍"].includes(t))),
+    () =>
+      filtered.filter((p) =>
+        p.tags.some((t) => ["유산소", "밸런스", "클라이밍"].includes(t))
+      ),
     [filtered]
   );
 
@@ -278,16 +301,36 @@ export default function PackagePage() {
             keyPrefix="ai-"
           />
         )}
-        <HorizontalSection title="💪 헬린이를 위한 가벼운 헬스 패키지" items={sectionGym} keyPrefix="gym-" />
-        <HorizontalSection title="🧘‍♀️ 요가 · 필라테스 추천 패키지" items={sectionYoga} keyPrefix="yoga-" />
-        <HorizontalSection title="🏃‍♀️ 활동적인 러닝/클라이밍 패키지" items={sectionActive} keyPrefix="active-" />
+        <HorizontalSection
+          title="💪 헬린이를 위한 가벼운 헬스 패키지"
+          items={sectionGym}
+          keyPrefix="gym-"
+        />
+        <HorizontalSection
+          title="🧘‍♀️ 요가 · 필라테스 추천 패키지"
+          items={sectionYoga}
+          keyPrefix="yoga-"
+        />
+        <HorizontalSection
+          title="🏃‍♀️ 활동적인 러닝/클라이밍 패키지"
+          items={sectionActive}
+          keyPrefix="active-"
+        />
       </S.Page>
 
       <Footer />
 
       {/* 모달들 */}
-      <LoginRequiredModal open={openLogin} onClose={() => setOpenLogin(false)} onLogin={handleLogin} />
-      <SurveyRequiredModal open={openSurvey} onClose={() => setOpenSurvey(false)} onGoSurvey={handleGoSurvey} />
+      <LoginRequiredModal
+        open={openLogin}
+        onClose={() => setOpenLogin(false)}
+        onLogin={handleLogin}
+      />
+      <SurveyRequiredModal
+        open={openSurvey}
+        onClose={() => setOpenSurvey(false)}
+        onGoSurvey={handleGoSurvey}
+      />
     </>
   );
 }

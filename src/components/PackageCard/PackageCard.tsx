@@ -1,8 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import * as S from "./PackageCard.style";
 
 import fitness1 from "../../assets/sample_pic2.svg";
 
-/* 타입 선언 */
 type PackageItem = {
   id: number;
   title: string;
@@ -18,18 +18,25 @@ interface Props {
   onClick?: (id: number) => void;
 }
 
-/* 가격 포맷 */
 const fmt = (n: number) => n.toLocaleString();
 
-/* 컴포넌트 */
 export default function PackageCard({ item, onClick }: Props) {
   const { id, title, thumbnail, tags, detail, pricePerClass } = item;
 
-  // 라벨은 없으면 첫 번째 태그를 임시로 사용 (원하면 label 필드로 바꿔도 됨)
+  const navigate = useNavigate();
+
   const badgeLabel = tags?.[0];
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(id);
+    } else {
+      navigate(`/package/${id}`);
+    }
+  };
+
   return (
-    <S.Card onClick={() => onClick?.(id)} role="button" tabIndex={0}>
+    <S.Card onClick={handleClick} role="button" tabIndex={0}>
       <S.ThumbWrap>
         <S.Thumb
           src={
