@@ -12,6 +12,7 @@ import * as S from "./StoreInformation.styles";
 import { getFacilityDetail, getFacilityReviews  } from "./apis/facility";
 import type { LocationStore } from "./apis/facility";
 import { ApiError } from "../../utils/api";
+import KakaoMap from "./components/KakaoMap";
 
 // 매장 정보 데이터 타입 (API에서 받아올 데이터)
 export interface StoreInfo {
@@ -49,7 +50,6 @@ const mockStoreInfo: StoreInfo = {
   images: [
     "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/xvxfM77i4R.png",
     "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/1tYvpfqtmH.png",
-    "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/BF5wMPhZfq.png",
     "https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-11-09/rvnakEmKHy.png",
   ],
 };
@@ -687,7 +687,7 @@ const formatAddressDescription = (text?: string | null) => {
 
             {activeTab === "map" && (
               <S.MapPlaceholder>
-                <p>지도 영역</p>
+                <KakaoMap address={storeInfo.address} name={storeInfo.name} />
               </S.MapPlaceholder>
             )}
           </S.StoreInfoSection>
