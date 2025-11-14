@@ -126,7 +126,7 @@ const mapMyPassToCartItem = (pass: MyPassDto): CartItemType => ({
 export default function CartPage() {
   useEffect(() => {
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
@@ -366,7 +366,7 @@ useEffect(() => {
   );
 
   return (
-    <>
+    <main style={{overflow: "scroll"}}>
     <S.Container>
       <S.Grid>
         {/* 장바구니 */}
@@ -396,6 +396,7 @@ useEffect(() => {
         </S.LeftCol>
 
         {/* 예약 내역 */}
+
         <S.RightCol>
           <S.RightPanel>
             <S.RightHeader>예약 내역</S.RightHeader>
@@ -451,15 +452,18 @@ useEffect(() => {
             </S.RightBody>
           </S.RightPanel>
 
-          <S.PayWrap>
+          {/* <S.PayWrap> */}
             <S.PayButton
               type="button"
               onClick={() => setIsPayModalOpen(true)}
             >
               결제하기
             </S.PayButton>
-          </S.PayWrap>
+          {/* </S.PayWrap> */}
+
         </S.RightCol>
+
+
       </S.Grid>
     </S.Container>
     <PayModal
@@ -469,6 +473,6 @@ useEffect(() => {
               onConfirm={handlePay}
               isProcessing={isPaying}
             />
-    </>
+    </main>
   );
 }

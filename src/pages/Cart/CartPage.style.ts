@@ -1,14 +1,14 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  --header-h: 90px; /* 프로젝트 헤더 높이에 맞춰 조정 */
 
   width: 100%;
   max-width: 1160px;
   margin: 0 auto;
 
-  height: 100dvh; /* 화면 스크롤 잠금용: 컨테이너를 뷰포트 높이에 고정 */
-  overflow: visible; /* 바깥 스크롤 금지 */
+  // height: 100dvh; /* 화면 스크롤 잠금용: 컨테이너를 뷰포트 높이에 고정 */
+   min-height: 100dvh; 
+  //overflow: visible; /* 바깥 스크롤 금지 */
 
   padding: 24px 20px 24px;
   box-sizing: border-box;
@@ -103,7 +103,11 @@ export const PriceRow = styled.div`
   }
 `;
 
-export const RightCol = styled.aside``;
+export const RightCol = styled.aside`
+display: flex;
+flex-direction: column;
+gap: 24px;
+`;
 
 export const RightPanel = styled.section`
   position: sticky;
@@ -196,15 +200,15 @@ export const TotalPrice = styled.strong`
   white-space: nowrap;
 `;
 
-export const PayWrap = styled.div`
-  position: fixed;
-  right: calc(
-    (100vw - min(100vw, 1160px)) / 2 + 20px
-  ); /* 컨테이너 내부 오른쪽 20px */
-  margin-top: 10px;
-  width: 360px; /* 오른쪽 컬럼과 동일 */
-  //   z-index: 20;
-`;
+// export const PayWrap = styled.div`
+//   position: fixed;
+//   right: calc(
+//     (100vw - min(100vw, 1160px)) / 2 + 20px
+//   ); /* 컨테이너 내부 오른쪽 20px */
+//   margin-top: 10px;
+//   width: 360px; /* 오른쪽 컬럼과 동일 */
+//   //   z-index: 20;
+// `;
 
 export const PayButton = styled.button`
   width: 100%;
